@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>🦾 Orçameintor</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet" />
+  <style>
+    /* Reset básico */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #f5f7f9;
+      color: #2e2e2e;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+      user-select: none;
+    }
+
+    header {
+      margin-bottom: 15px;
+    }
+
+    header h1 {
+      font-family: 'Orbitron', monospace;
+      font-weight: 900;
+      font-size: 2.2rem;
+      color: #5aa897;
+      margin-bottom: 4px;
+      user-select: text;
+    }
+
+    header nav {
+      font-size: 0.85rem;
+      color: #888;
+      user-select: text;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-top: 15px;
+      user-select: text;
+      color: #4f6367;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      margin-top: 6px;
+      border: 1.5px solid #a8c0c0;
+      border-radius: 6px;
+      background: #e9f0f0;
+      color: #2e2e2e;
+      font-size: 1rem;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      transition: border-color 0.3s ease;
+      resize: vertical;
+    }
+    input:focus,
+    textarea:focus {
+      border-color: #5aa897;
+      outline: none;
+    }
+
+    button {
+      margin-top: 25px;
+      background-color: #5aa897;
+      border: none;
+      padding: 12px 0;
+      width: 100%;
+      color: #f0f7f7;
+      font-weight: 700;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      user-select: none;
+      font-family: 'Orbitron', monospace;
+      letter-spacing: 0.05em;
+    }
+    button:hover {
+      background-color: #3b7a70;
+    }
+    button:active {
+      background-color: #2e5e54;
+    }
+
+    .item-group {
+      background: #d9e6e6;
+      padding: 15px 20px;
+      margin-top: 25px;
+      border-radius: 12px;
+      box-shadow: 0 3px 8px rgba(90, 168, 151, 0.3);
+      user-select: text;
+    }
+
+    .item-group h2 {
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+      font-size: 1.3rem;
+      color: #3b7a70;
+      margin-bottom: 12px;
+      user-select: text;
+    }
+
+    .item-group label {
+      margin-top: 12px;
+      color: #3b7a70;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px dashed #a8c0c0;
+      margin: 15px 0;
+      user-select: none;
+    }
+
+    .total {
+      margin-top: 30px;
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: #3b7a70;
+      text-align: center;
+      font-family: 'Orbitron', monospace;
+      user-select: text;
+    }
+
+    footer {
+      margin-top: 40px;
+      font-size: 0.85rem;
+      color: #7d9a99;
+      text-align: center;
+      user-select: text;
+      font-style: italic;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* Migalhas de pão simples */
+    nav.breadcrumb {
+      font-size: 0.85rem;
+      margin-bottom: 12px;
+      color: #5aa897;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      user-select: text;
+    }
+    nav.breadcrumb span {
+      margin-right: 6px;
+    }
+    nav.breadcrumb span::after {
+      content: "›";
+      margin-left: 6px;
+      color: #a8c0c0;
+    }
+    nav.breadcrumb span:last-child::after {
+      content: "";
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <nav class="breadcrumb" aria-label="Você está aqui:">
+      <span>Home</span>
+      <span>Orçamentos</span>
+      <span>Orçameintor</span>
+    </nav>
+    <h1>🦾 Orçameintor</h1>
+  </header>
+
+  <label for="cliente">Cliente</label>
+  <input type="text" id="cliente" autocomplete="off" placeholder="Nome do cliente" />
+
+  <label for="profissional">Profissional</label>
+  <input type="text" id="profissional" autocomplete="off" placeholder="Seu nome ou da empresa" />
+
+  <label for="data">Data</label>
+  <input type="date" id="data" />
+
+  <label for="area">Área total (m²)</label>
+  <input type="number" id="area" value="0" min="0" step="0.01" />
+
+  <label for="preco_m2">Preço por m² (R$)</label>
+  <input type="number" id="preco_m2" value="0" min="0" step="0.01" />
+
+  <div class="item-group">
+    <h2>Itens Padrão</h2>
+    <label for="qtd_portas">Portas (quantidade)</label>
+    <input type="number" id="qtd_portas" value="0" min="0" step="1" />
+    <label for="preco_porta">Preço unitário (R$)</label>
+    <input type="number" id="preco_porta" value="0" min="0" step="0.01" />
+
+    <label for="qtd_janelas">Janelas (quantidade)</label>
+    <input type="number" id="qtd_janelas" value="0" min="0" step="1" />
+    <label for="preco_janela">Preço unitário (R$)</label>
+    <input type="number" id="preco_janela" value="0" min="0" step="0.01" />
+
+    <label for="qtd_paredes">Paredes (quantidade)</label>
+    <input type="number" id="qtd_paredes" value="0" min="0" step="1" />
+    <label for="preco_parede">Preço unitário (R$)</label>
+    <input type="number" id="preco_parede" value="0" min="0" step="0.01" />
+  </div>
+
+  <div class="item-group">
+    <h2>Itens Personalizados</h2>
+    <div id="itensExtras"></div>
+    <button type="button" onclick="adicionarItem()">+ Adicionar Item</button>
+  </div>
+
+  <label for="observacoes">Observações</label>
+  <textarea id="observacoes" rows="3" placeholder="Detalhes adicionais"></textarea>
+
+  <div class="total">Total: R$ <span id="total">0.00</span></div>
+
+  <button type="button" onclick="gerarPDF()">🧾 Gerar PDF</button>
+  <button type="button" onclick="exportarJSON()">💾 Exportar JSON</button>
+  <button type="button" onclick="limparTudo()">🧹 Limpar Tudo</button>
+
+  <footer>
+    Gerado com Orçameintor • Desenvolvido por Ganjabionick8
+  </footer>
+
+  <script>
+    const itensExtras = [];
+
+    function adicionarItem() {
+      const container = document.getElementById("itensExtras");
+      const index = itensExtras.length;
+
+      const div = document.createElement("div");
+      div.innerHTML = `
+        <label for="item_nome_${index}">Item:</label>
+        <input type="text" id="item_nome_${index}" placeholder="Nome do item" autocomplete="off" />
+        <label for="item_qtd_${index}">Qtd:</label>
+        <input type="number" id="item_qtd_${index}" value="0" min="0" step="1" />
+        <label for="item_preco_${index}">Preço unitário (R$):</label>
+        <input type="number" id="item_preco_${index}" value="0" min="0" step="0.01" />
+        <hr />
+      `;
+      container.appendChild(div);
+      itensExtras.push(index);
+      atualizarTotal();
+
+      // Adicionar listener para atualizar total ao mudar qualquer input novo
+      const inputs = div.querySelectorAll('input');
+      inputs.forEach(input => input.addEventListener('input', atualizarTotal));
+    }
+
+    function atualizarTotal() {
+      const area = parseFloat(document.getElementById("area").value) || 0;
+      const preco_m2 = parseFloat(document.getElementById("preco_m2").value) || 0;
+      const portas = (parseInt(document.getElementById("qtd_portas").value) || 0) * (parseFloat(document.getElementById("preco_porta").value) || 0);
+      const janelas = (parseInt(document.getElementById("qtd_janelas").value) || 0) * (parseFloat(document.getElementById("preco_janela").value) || 0);
+      const paredes = (parseInt(document.getElementById("qtd_paredes").value) || 0) * (parseFloat(document.getElementById("preco_parede").value) || 0);
+
+      let extras = 0;
+      itensExtras.forEach(i => {
+        const qtd = parseFloat(document.getElementById(`item_qtd_${i}`).value) || 0;
+        const preco = parseFloat(document.getElementById(`item_preco_${i}`).value) || 0;
+        extras += qtd * preco;
+      });
+
+      const total = (area * preco_m2) + portas + janelas + paredes + extras;
+      document.getElementById("total").innerText = total.toFixed(2);
+    }
+
+    // Atualiza total ao mudar qualquer input principal
+    document.querySelectorAll("input").forEach(input => {
+      input.addEventListener("input", atualizarTotal);
+    });
+
+    function gerarPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      let y = 10;
+      const lineHeight = 8;
+      const marginLeft = 10;
+      const maxLineWidth = 190; // largura máxima para quebrar linhas
+
+      const cliente = document.getElementById("cliente").value || "N/A";
+      const profissional = document.getElementById("profissional").value || "N/A";
+      const data = document.getElementById("data").value || new Date().toLocaleDateString();
+      const obs = document.getElementById("observacoes").value || "";
+      const total = document.getElementById("total").innerText;
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.text("Orçameintor v1.0", marginLeft, y);
+      y += lineHeight;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text(`Cliente: ${cliente}`, marginLeft, y);
+      y += lineHeight;
+      doc.text(`Profissional: ${profissional}`, marginLeft, y);
+      y += lineHeight;
+      doc.text(`Data: ${data}`, marginLeft, y);
+      y += lineHeight + 5;
+
+      doc.setFont("helvetica", "bold");
+      doc.text("Itens:", marginLeft, y);
+      y += lineHeight;
+
+      doc.setFont("helvetica", "normal");
+
+      function addItem(nome, qtd, preco) {
+        const texto = `${nome}: ${qtd} × R$ ${preco.toFixed(2)} = R$ ${(qtd * preco).toFixed(2)}`;
+        const splitText = doc.splitTextToSize(texto, maxLineWidth);
+        doc.text(splitText, marginLeft, y);
+        y += lineHeight * splitText.length;
+      }
+
+      addItem("Área", parseFloat(document.getElementById("area").value) || 0, parseFloat(document.getElementById("preco_m2").value) || 0);
+      addItem("Portas", parseFloat(document.getElementById("qtd_portas").value) || 0, parseFloat(document.getElementById("preco_porta").value) || 0);
+      addItem("Janelas", parseFloat(document.getElementById("qtd_janelas").value) || 0, parseFloat(document.getElementById("preco_janela").value) || 0);
+      addItem("Paredes", parseFloat(document.getElementById("qtd_paredes").value) || 0, parseFloat(document.getElementById("preco_parede").value) || 0);
+
+      itensExtras.forEach(i => {
+        const nome = document.getElementById(`item_nome_${i}`).value || `Item ${i + 1}`;
+        const qtd = parseFloat(document.getElementById(`item_qtd_${i}`).value) || 0;
+        const preco = parseFloat(document.getElementById(`item_preco_${i}`).value) || 0;
+        addItem(nome, qtd, preco);
+      });
+
+      y += 5;
+      doc.setFont("helvetica", "bold");
+      doc.text("Observações:", marginLeft, y);
+      y += lineHeight;
+
+      doc.setFont("helvetica", "normal");
+      const obsSplit = doc.splitTextToSize(obs, maxLineWidth);
+      doc.text(obsSplit, marginLeft, y);
+      y += lineHeight * obsSplit.length + 10;
+
+      doc.setFont("helvetica", "bold");
+      doc.text(`TOTAL: R$ ${total}`, marginLeft, y);
+      y += lineHeight + 10;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.text("Gerado com Orçameintor • Desenvolvido por Ganjabionick8", marginLeft, y);
+
+      doc.save("orcamento_orcameintor.pdf");
+    }
+
+    function exportarJSON() {
+      const dados = {
+        cliente: document.getElementById("cliente").value,
+        profissional: document.getElementById("profissional").value,
+        data: document.getElementById("data").value,
+        area: document.getElementById("area").value,
+        preco_m2: document.getElementById("preco_m2").value,
+        qtd_portas: document.getElementById("qtd_portas").value,
+        preco_porta: document.getElementById("preco_porta").value,
+        qtd_janelas: document.getElementById("qtd_janelas").value,
+        preco_janela: document.getElementById("preco_janela").value,
+        qtd_paredes: document.getElementById("qtd_paredes").value,
+        preco_parede: document.getElementById("preco_parede").value,
+        observacoes: document.getElementById("observacoes").value,
+        itensExtras: itensExtras.map(i => ({
+          nome: document.getElementById(`item_nome_${i}`).value,
+          qtd: document.getElementById(`item_qtd_${i}`).value,
+          preco: document.getElementById(`item_preco_${i}`).value
+        }))
+      };
+      const blob = new Blob([JSON.stringify(dados, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "orcamento_orcameintor.json";
+      a.click();
+    }
+
+    function limparTudo() {
+      if (confirm("Limpar todos os campos?")) location.reload();
+    }
+
+    // Atualiza total ao mudar qualquer input principal
+    document.querySelectorAll("input").forEach(input => {
+      input.addEventListener("input", atualizarTotal);
+    });
+
+  </script>
+
+</body>
+</html>
