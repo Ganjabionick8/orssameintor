@@ -215,7 +215,7 @@
   <label for="observacoes">Observações</label>
   <textarea id="observacoes" rows="3" placeholder="Detalhes adicionais"></textarea>
 
-  <div class="total">Total: R$ <span id="total">0.00</span></div>
+  <div class="total">Total: R$ <span id="total">0,00</span></div>
 
   <button type="button" onclick="gerarPDF()">🧾 Gerar PDF</button>
   <button type="button" onclick="exportarJSON()">💾 Exportar JSON</button>
@@ -266,7 +266,9 @@
       });
 
       const total = (area * preco_m2) + portas + janelas + paredes + extras;
-      document.getElementById("total").innerText = total.toFixed(2);
+
+      // Formata o total para padrão brasileiro com vírgula decimal e ponto milhar
+      document.getElementById("total").innerText = total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
     }
 
     // Atualiza total ao mudar qualquer input principal
@@ -310,7 +312,7 @@
       doc.setFont("helvetica", "normal");
 
       function addItem(nome, qtd, preco) {
-        const texto = `${nome}: ${qtd} × R$ ${preco.toFixed(2)} = R$ ${(qtd * preco).toFixed(2)}`;
+        const texto = `${nome}: ${qtd} × R$ ${preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} = R$ ${(qtd * preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
         const splitText = doc.splitTextToSize(texto, maxLineWidth);
         doc.text(splitText, marginLeft, y);
         y += lineHeight * splitText.length;
@@ -380,12 +382,6 @@
     function limparTudo() {
       if (confirm("Limpar todos os campos?")) location.reload();
     }
-
-    // Atualiza total ao mudar qualquer input principal
-    document.querySelectorAll("input").forEach(input => {
-      input.addEventListener("input", atualizarTotal);
-    });
-
   </script>
 
 </body>
