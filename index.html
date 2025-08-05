@@ -1,236 +1,258 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Orçameintor</title>
+  <meta charset="UTF-8" />
+  <title>Açougue Carajá</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
-      background: #121212;
-      color: #eee;
-      font-family: 'Orbitron', sans-serif;
+      background: #fefefe;
+      color: #333;
+      font-family: 'Segoe UI', sans-serif;
       padding: 20px;
     }
-    h1, h2 {
-      color: #00ff99;
+    h1 {
+      color: #4CAF50;
     }
-    label {
-      display: block;
-      margin-top: 10px;
-    }
-    input, button, textarea {
-      width: 100%;
+    input, button {
       padding: 8px;
-      margin-top: 5px;
-      border: none;
-      border-radius: 5px;
-      background: #222;
-      color: #fff;
+      margin: 5px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      width: 100%;
+      font-size: 16px;
     }
     button {
-      background: #00ff99;
+      background-color: #a0e7e5;
+      color: #333;
       font-weight: bold;
       cursor: pointer;
-      margin-top: 15px;
+      transition: 0.3s;
     }
-    .item {
-      background: #1e1e1e;
-      padding: 10px;
-      margin-top: 10px;
+    button:hover {
+      background-color: #b4f8c8;
+    }
+    .section {
+      background: #ffffff;
+      padding: 15px;
+      margin-top: 20px;
+      border: 1px solid #ddd;
       border-radius: 8px;
+      box-shadow: 2px 2px 8px rgba(0,0,0,0.05);
+    }
+    .linha {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      border-bottom: 1px dashed #ddd;
+    }
+    .linha:last-child {
+      border-bottom: none;
     }
     .total {
-      margin-top: 20px;
-      font-size: 1.5em;
-      color: #00ff99;
+      font-size: 1.4em;
+      font-weight: bold;
+      color: #4CAF50;
+      margin-top: 10px;
       text-align: center;
     }
-    #apoie {
-      margin-top: 30px;
-      text-align: center;
-      font-size: 0.9em;
-      color: #888;
+    label {
+      font-weight: bold;
+      margin-top: 10px;
+      display: block;
+    }
+    datalist {
+      display: none;
     }
   </style>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
 </head>
 <body>
 
-  <h1>🦾 Orçameintor</h1>
+  <h1>🥩🛒 Açougue Carajá</h1>
 
-  <label>Cliente</label>
-  <input type="text" id="cliente">
+  <label>Vendedor</label>
+  <input type="text" id="estabelecimento" placeholder="Ex: Mateus" />
 
-  <label>Profissional</label>
-  <input type="text" id="profissional">
+  <div class="section">
+    <h3>Nova Venda</h3>
+    <input type="text" id="produto" list="produtosLista" placeholder="Produto" />
+    <datalist id="produtosLista"></datalist>
+    <input type="number" id="quantidade" placeholder="Quantidade" value="1" />
+    <input type="number" id="preco" placeholder="Preço unitário (R$)" step="0.01" />
+    <button onclick="adicionarProduto()">+ Adicionar Produto</button>
 
-  <label>Data</label>
-  <input type="date" id="data">
-
-  <label>Área total (m²)</label>
-  <input type="number" id="area" value="0">
-
-  <label>Preço por m²</label>
-  <input type="number" id="preco_m2" value="0">
-
-  <div class="item">
-    <h2>Itens Padrão</h2>
-    <label>Portas (qtd)</label><input type="number" id="qtd_portas" value="0">
-    <label>Preço unitário</label><input type="number" id="preco_porta" value="0">
-
-    <label>Janelas (qtd)</label><input type="number" id="qtd_janelas" value="0">
-    <label>Preço unitário</label><input type="number" id="preco_janela" value="0">
-
-    <label>Paredes (qtd)</label><input type="number" id="qtd_paredes" value="0">
-    <label>Preço unitário</label><input type="number" id="preco_parede" value="0">
+    <div id="carrinho"></div>
+    <div class="total">Total da Venda: R$ <span id="totalVenda">0.00</span></div>
+    <button onclick="finalizarVenda()">✅ Finalizar Venda</button>
   </div>
 
-  <div class="item">
-    <h2>Itens Personalizados</h2>
-    <div id="itensExtras"></div>
-    <button onclick="adicionarItem()">+ Adicionar Item</button>
+  <div class="section">
+    <h3>Vendas do Dia</h3>
+    <div id="listaVendas"></div>
+    <div class="total">Total do Dia: R$ <span id="totalDia">0.00</span></div>
+    <button onclick="gerarRelatorio()">📄 Fechar Caixa</button>
+    <button onclick="resetarCaixa()">🗑️ Limpar Caixa</button>
   </div>
-
-  <label>Observações</label>
-  <textarea id="observacoes" rows="3"></textarea>
-
-  <div class="total">Total: R$ <span id="total">0.00</span></div>
-
-  <button onclick="gerarPDF()">🧾 Gerar PDF</button>
-  <button onclick="exportarJSON()">💾 Exportar JSON</button>
-  <button onclick="limparTudo()">🧹 Limpar Tudo</button>
-
-  <div id="apoie">Gerado com Orçameintor • Apoie: biel.simeone@gmail.com (Pix)</div>
 
   <script>
-    const itensExtras = [];
+    let carrinho = [];
+    let vendas = JSON.parse(localStorage.getItem("vendasSciFi") || "[]");
+    let produtosUsados = JSON.parse(localStorage.getItem("produtosSciFi") || "[]");
 
-    function adicionarItem() {
-      const container = document.getElementById("itensExtras");
-      const index = itensExtras.length;
-
-      const div = document.createElement("div");
-      div.innerHTML = `
-        <label>Item:</label>
-        <input type="text" id="item_nome_${index}" placeholder="Nome">
-        <label>Qtd:</label>
-        <input type="number" id="item_qtd_${index}" value="0">
-        <label>Preço:</label>
-        <input type="number" id="item_preco_${index}" value="0">
-        <hr style="margin:10px 0; border: 1px dashed #444;">
-      `;
-      container.appendChild(div);
-      itensExtras.push(index);
-      atualizarTotal();
-    }
-
-    document.querySelectorAll("input").forEach(input => {
-      input.addEventListener("input", atualizarTotal);
-    });
-
-    function atualizarTotal() {
-      const area = parseFloat(document.getElementById("area").value) || 0;
-      const preco_m2 = parseFloat(document.getElementById("preco_m2").value) || 0;
-      const portas = (parseInt(document.getElementById("qtd_portas").value) || 0) * (parseFloat(document.getElementById("preco_porta").value) || 0);
-      const janelas = (parseInt(document.getElementById("qtd_janelas").value) || 0) * (parseFloat(document.getElementById("preco_janela").value) || 0);
-      const paredes = (parseInt(document.getElementById("qtd_paredes").value) || 0) * (parseFloat(document.getElementById("preco_parede").value) || 0);
-
-      let extras = 0;
-      itensExtras.forEach(i => {
-        const qtd = parseFloat(document.getElementById(`item_qtd_${i}`).value) || 0;
-        const preco = parseFloat(document.getElementById(`item_preco_${i}`).value) || 0;
-        extras += qtd * preco;
+    function atualizarDatalist() {
+      const lista = document.getElementById("produtosLista");
+      lista.innerHTML = "";
+      produtosUsados.forEach((p) => {
+        const opt = document.createElement("option");
+        opt.value = p;
+        lista.appendChild(opt);
       });
-
-      const total = (area * preco_m2) + portas + janelas + paredes + extras;
-      document.getElementById("total").innerText = total.toFixed(2);
     }
 
-    function gerarPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
+    function adicionarProduto() {
+      const nome = document.getElementById("produto").value.trim();
+      const qtd = parseFloat(document.getElementById("quantidade").value);
+      const preco = parseFloat(document.getElementById("preco").value);
 
-      let y = 10;
-      const cliente = document.getElementById("cliente").value || "N/A";
-      const profissional = document.getElementById("profissional").value || "N/A";
-      const data = document.getElementById("data").value || new Date().toLocaleDateString();
-      const obs = document.getElementById("observacoes").value || "";
-      const total = document.getElementById("total").innerText;
+      if (!nome || isNaN(qtd) || isNaN(preco))
+        return alert("Preencha todos os campos.");
 
-      doc.text("Orçameintor v1.0", 10, y); y += 10;
-      doc.text(`Cliente: ${cliente}`, 10, y); y += 10;
-      doc.text(`Profissional: ${profissional}`, 10, y); y += 10;
-      doc.text(`Data: ${data}`, 10, y); y += 10;
-
-      y += 5;
-      doc.text("Itens:", 10, y); y += 10;
-
-      function addItem(nome, qtd, preco) {
-        doc.text(`${nome}: ${qtd} × R$ ${preco.toFixed(2)} = R$ ${(qtd * preco).toFixed(2)}`, 10, y);
-        y += 8;
+      carrinho.push({ nome, qtd, preco });
+      if (!produtosUsados.includes(nome)) {
+        produtosUsados.push(nome);
+        localStorage.setItem("produtosSciFi", JSON.stringify(produtosUsados));
+        atualizarDatalist();
       }
 
-      addItem("Área", parseFloat(document.getElementById("area").value) || 0, parseFloat(document.getElementById("preco_m2").value) || 0);
-      addItem("Portas", parseFloat(document.getElementById("qtd_portas").value) || 0, parseFloat(document.getElementById("preco_porta").value) || 0);
-      addItem("Janelas", parseFloat(document.getElementById("qtd_janelas").value) || 0, parseFloat(document.getElementById("preco_janela").value) || 0);
-      addItem("Paredes", parseFloat(document.getElementById("qtd_paredes").value) || 0, parseFloat(document.getElementById("preco_parede").value) || 0);
+      document.getElementById("produto").value = "";
+      document.getElementById("quantidade").value = 1;
+      document.getElementById("preco").value = "";
+      atualizarCarrinho();
+    }
 
-      itensExtras.forEach(i => {
-        const nome = document.getElementById(`item_nome_${i}`).value || `Item ${i + 1}`;
-        const qtd = parseFloat(document.getElementById(`item_qtd_${i}`).value) || 0;
-        const preco = parseFloat(document.getElementById(`item_preco_${i}`).value) || 0;
-        addItem(nome, qtd, preco);
+    function atualizarCarrinho() {
+      const carrinhoDiv = document.getElementById("carrinho");
+      carrinhoDiv.innerHTML = "";
+      let total = 0;
+
+      carrinho.forEach((item) => {
+        const subtotal = item.qtd * item.preco;
+        total += subtotal;
+        carrinhoDiv.innerHTML += `
+          <div class="linha">
+            <span>${item.nome} (${item.qtd} × R$${item.preco.toFixed(2)})</span>
+            <span>R$${subtotal.toFixed(2)}</span>
+          </div>`;
       });
 
-      y += 5;
-      doc.text("Observações:", 10, y); y += 8;
-      doc.text(obs, 10, y); y += 20;
+      document.getElementById("totalVenda").innerText = total.toFixed(2);
+    }
+
+    function finalizarVenda() {
+      if (carrinho.length === 0) return alert("Nenhum produto na venda.");
+      const total = parseFloat(document.getElementById("totalVenda").innerText);
+      const estabelecimento =
+        document.getElementById("estabelecimento").value ||
+        "Estabelecimento Não Informado";
+
+      const venda = {
+        data: new Date().toLocaleString(),
+        produtos: [...carrinho],
+        total,
+        estabelecimento,
+      };
+
+      vendas.push(venda);
+      localStorage.setItem("vendasSciFi", JSON.stringify(vendas));
+      carrinho = [];
+      atualizarCarrinho();
+      document.getElementById("totalVenda").innerText = "0.00";
+      atualizarVendas();
+      alert("Venda finalizada!");
+    }
+
+    function atualizarVendas() {
+      const lista = document.getElementById("listaVendas");
+      lista.innerHTML = "";
+      let totalDia = 0;
+
+      vendas.forEach((venda, i) => {
+        totalDia += venda.total;
+        let html = `
+          <div class="linha"><strong>Venda ${i + 1}</strong> - ${venda.data}</div>
+          <div><em>${venda.estabelecimento}</em></div>`;
+        venda.produtos.forEach((p) => {
+          html += `<div class="linha"><span>${p.nome} (${p.qtd} × R$${p.preco.toFixed(
+            2
+          )})</span><span>R$${(p.qtd * p.preco).toFixed(2)}</span></div>`;
+        });
+        html += `<div class="linha"><strong>Total:</strong><strong>R$${venda.total.toFixed(
+          2
+        )}</strong></div><hr>`;
+        lista.innerHTML += html;
+      });
+
+      document.getElementById("totalDia").innerText = totalDia.toFixed(2);
+    }
+
+    function gerarRelatorio() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      let y = 10;
+      let totalDia = 0;
 
       doc.setFont("helvetica", "bold");
-      doc.text(`TOTAL: R$ ${total}`, 10, y); y += 10;
-      doc.setFont("helvetica", "normal");
-
-      doc.text("Assinatura: __________________________", 10, y); y += 10;
-
+      doc.setFontSize(12);
+      doc.text("Relatório de Caixa — Caixa Sci-Fi", 10, y);
       y += 10;
+      doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
-      doc.text("Gerado com Orçameintor • Apoie: biel.simeone@gmail.com (Pix)", 10, y);
 
-      doc.save("orcamento_orcameintor.pdf");
+      vendas.forEach((venda, i) => {
+        doc.text(`Venda ${i + 1} - ${venda.data}`, 10, y);
+        y += 6;
+        doc.text(`Estabelecimento: ${venda.estabelecimento}`, 10, y);
+        y += 6;
+        venda.produtos.forEach((p) => {
+          doc.text(
+            `• ${p.nome} - ${p.qtd} × R$${p.preco.toFixed(2)} = R$${(
+              p.qtd * p.preco
+            ).toFixed(2)}`,
+            12,
+            y
+          );
+          y += 6;
+        });
+        doc.text(`Total: R$${venda.total.toFixed(2)}`, 12, y);
+        y += 10;
+        totalDia += venda.total;
+      });
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.text(`TOTAL DO DIA: R$${totalDia.toFixed(2)}`, 10, y);
+      y += 15;
+
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(10);
+      const estabelecimento =
+        document.getElementById("estabelecimento").value ||
+        "Estabelecimento Não Informado";
+      doc.text(`Relatório gerado por: ${estabelecimento}`, 10, y);
+      doc.save("relatorio_caixa.pdf");
     }
 
-    function exportarJSON() {
-      const dados = {
-        cliente: document.getElementById("cliente").value,
-        profissional: document.getElementById("profissional").value,
-        data: document.getElementById("data").value,
-        area: document.getElementById("area").value,
-        preco_m2: document.getElementById("preco_m2").value,
-        qtd_portas: document.getElementById("qtd_portas").value,
-        preco_porta: document.getElementById("preco_porta").value,
-        qtd_janelas: document.getElementById("qtd_janelas").value,
-        preco_janela: document.getElementById("preco_janela").value,
-        qtd_paredes: document.getElementById("qtd_paredes").value,
-        preco_parede: document.getElementById("preco_parede").value,
-        observacoes: document.getElementById("observacoes").value,
-        itensExtras: itensExtras.map(i => ({
-          nome: document.getElementById(`item_nome_${i}`).value,
-          qtd: document.getElementById(`item_qtd_${i}`).value,
-          preco: document.getElementById(`item_preco_${i}`).value
-        }))
-      };
-      const blob = new Blob([JSON.stringify(dados, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "orcamento_orcameintor.json";
-      a.click();
+    function resetarCaixa() {
+      if (confirm("Tem certeza que deseja limpar todo o caixa do dia?")) {
+        vendas = [];
+        localStorage.removeItem("vendasSciFi");
+        atualizarVendas();
+        alert("Caixa zerado.");
+      }
     }
 
-    function limparTudo() {
-      if (confirm("Limpar todos os campos?")) location.reload();
-    }
+    atualizarVendas();
+    atualizarDatalist();
   </script>
-
 </body>
 </html>
