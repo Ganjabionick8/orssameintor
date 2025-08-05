@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Orçameintor</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      background: #121212;
+      color: #eee;
+      font-family: 'Orbitron', sans-serif;
+      padding: 20px;
+    }
+    h1, h2 {
+      color: #00ff99;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input, button, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: none;
+      border-radius: 5px;
+      background: #222;
+      color: #fff;
+    }
+    button {
+      background: #00ff99;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+    .item {
+      background: #1e1e1e;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+    }
+    .total {
+      margin-top: 20px;
+      font-size: 1.5em;
+      color: #00ff99;
+      text-align: center;
+    }
+    #apoie {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 0.9em;
+      color: #888;
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <h1>🦾 Orçameintor</h1>
+
+  <label>Cliente</label>
+  <input type="text" id="cliente">
+
+  <label>Profissional</label>
+  <input type="text" id="profissional">
+
+  <label>Data</label>
+  <input type="date" id="data">
+
+  <label>Área total (m²)</label>
+  <input type="number" id="area" value="0">
+
+  <label>Preço por m²</label>
+  <input type="number" id="preco_m2" value="0">
+
+  <div class="item">
+    <h2>Itens Padrão</h2>
+    <label>Portas (qtd)</label><input type="number" id="qtd_portas" value="0">
+    <label>Preço unitário</label><input type="number" id="preco_porta" value="0">
+
+    <label>Janelas (qtd)</label><input type="number" id="qtd_janelas" value="0">
+    <label>Preço unitário</label><input type="number" id="preco_janela" value="0">
+
+    <label>Paredes (qtd)</label><input type="number" id="qtd_paredes" value="0">
+    <label>Preço unitário</label><input type="number" id="preco_parede" value="0">
+  </div>
+
+  <div class="item">
+    <h2>Itens Personalizados</h2>
+    <div id="itensExtras"></div>
+    <button onclick="adicionarItem()">+ Adicionar Item</button>
+  </div>
+
+  <label>Observações</label>
+  <textarea id="observacoes" rows="3"></textarea>
+
+  <div class="total">Total: R$ <span id="total">0.00</span></div>
+
+  <button onclick="gerarPDF()">🧾 Gerar PDF</button>
+  <button onclick="exportarJSON()">💾 Exportar JSON</button>
+  <button onclick="limparTudo()">🧹 Limpar Tudo</button>
+
+  <div id="apoie">Gerado com Orçameintor • Apoie: biel.simeone@gmail.com (Pix)</div>
+
+  <script>
+    const itensExtras = [];
+
+    function adicionarItem() {
+      const container = document.getElementById("itensExtras");
+      const index = itensExtras.length;
+
+      const div = document.createElement("div");
+      div.innerHTML = `
+        <label>Item:</label>
+        <input type="text" id="item_nome_${index}" placeholder="Nome">
+        <label>Qtd:</label>
+        <input type="number" id="item_qtd_${index}" value="0">
+        <label>Preço:</label>
+        <input type="number" id="item_preco_${index}" value="0">
+        <hr style="margin:10px 0; border: 1px dashed #444;">
+      `;
+      container.appendChild(div);
+      itensExtras.push(index);
+      atualizarTotal();
+    }
+
+    document.querySelectorAll("input").forEach(input => {
+      input.addEventListener("input", atualizarTotal);
+    });
+
+    function atualizarTotal() {
+      const area = parseFloat(document.getElementById("area").value) || 0;
+      const preco_m2 = parseFloat(document.getElementById("preco_m2").value) || 0;
+      const portas = (parseInt(document.getElementById("qtd_portas").value) || 0) * (parseFloat(document.getElementById("preco_porta").value) || 0);
+      const janelas = (parseInt(document.getElementById("qtd_janelas").value) || 0) * (parseFloat(document.getElementById("preco_janela").value) || 0);
+      const paredes = (parseInt(document.getElementById("qtd_paredes").value) || 0) * (parseFloat(document.getElementById("preco_parede").value) || 0);
+
+      let extras = 0;
+      itensExtras.forEach(i => {
+        const qtd = parseFloat(document.getElementById(`item_qtd_${i}`).value) || 0;
+        const preco = parseFloat(document.getElementById(`item_preco_${i}`).value) || 0;
+        extras += qtd * preco;
+      });
+
+      const total = (area * preco_m2) + portas + janelas + paredes + extras;
+      document.getElementById("total").innerText = total.toFixed(2);
+    }
+
+    function gerarPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      let y = 10;
+      const cliente = document.getElementById("cliente").value || "N/A";
+      const profissional = document.getElementById("profissional").value || "N/A";
+      const data = document.getElementById("data").value || new Date().toLocaleDateString();
+      const obs = document.getElementById("observacoes").value || "";
+      const total = document.getElementById("total").innerText;
+
+      doc.text("Orçameintor v1.0", 10, y); y += 10;
+      doc.text(`Cliente: ${cliente}`, 10, y); y += 10;
+      doc.text(`Profissional: ${profissional}`, 10, y); y += 10;
+      doc.text(`Data: ${data}`, 10, y); y += 10;
+
+      y += 5;
+      doc.text("Itens:", 10, y); y += 10;
+
+      function addItem(nome, qtd, preco) {
+        doc.text(`${nome}: ${qtd} × R$ ${preco.toFixed(2)} = R$ ${(qtd * preco).toFixed(2)}`, 10, y);
+        y += 8;
+      }
+
+      addItem("Área", parseFloat(document.getElementById("area").value) || 0, parseFloat(document.getElementById("preco_m2").value) || 0);
+      addItem("Portas", parseFloat(document.getElementById("qtd_portas").value) || 0, parseFloat(document.getElementById("preco_porta").value) || 0);
+      addItem("Janelas", parseFloat(document.getElementById("qtd_janelas").value) || 0, parseFloat(document.getElementById("preco_janela").value) || 0);
+      addItem("Paredes", parseFloat(document.getElementById("qtd_paredes").value) || 0, parseFloat(document.getElementById("preco_parede").value) || 0);
+
+      itensExtras.forEach(i => {
+        const nome = document.getElementById(`item_nome_${i}`).value || `Item ${i + 1}`;
+        const qtd = parseFloat(document.getElementById(`item_qtd_${i}`).value) || 0;
+        const preco = parseFloat(document.getElementById(`item_preco_${i}`).value) || 0;
+        addItem(nome, qtd, preco);
+      });
+
+      y += 5;
+      doc.text("Observações:", 10, y); y += 8;
+      doc.text(obs, 10, y); y += 20;
+
+      doc.setFont("helvetica", "bold");
+      doc.text(`TOTAL: R$ ${total}`, 10, y); y += 10;
+      doc.setFont("helvetica", "normal");
+
+      doc.text("Assinatura: __________________________", 10, y); y += 10;
+
+      y += 10;
+      doc.setFontSize(10);
+      doc.text("Gerado com Orçameintor • Apoie: biel.simeone@gmail.com (Pix)", 10, y);
+
+      doc.save("orcamento_orcameintor.pdf");
+    }
+
+    function exportarJSON() {
+      const dados = {
+        cliente: document.getElementById("cliente").value,
+        profissional: document.getElementById("profissional").value,
+        data: document.getElementById("data").value,
+        area: document.getElementById("area").value,
+        preco_m2: document.getElementById("preco_m2").value,
+        qtd_portas: document.getElementById("qtd_portas").value,
+        preco_porta: document.getElementById("preco_porta").value,
+        qtd_janelas: document.getElementById("qtd_janelas").value,
+        preco_janela: document.getElementById("preco_janela").value,
+        qtd_paredes: document.getElementById("qtd_paredes").value,
+        preco_parede: document.getElementById("preco_parede").value,
+        observacoes: document.getElementById("observacoes").value,
+        itensExtras: itensExtras.map(i => ({
+          nome: document.getElementById(`item_nome_${i}`).value,
+          qtd: document.getElementById(`item_qtd_${i}`).value,
+          preco: document.getElementById(`item_preco_${i}`).value
+        }))
+      };
+      const blob = new Blob([JSON.stringify(dados, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "orcamento_orcameintor.json";
+      a.click();
+    }
+
+    function limparTudo() {
+      if (confirm("Limpar todos os campos?")) location.reload();
+    }
+  </script>
+
+</body>
+</html>
