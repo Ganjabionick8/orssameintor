@@ -6,19 +6,37 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet" />
   <style>
+    :root {
+      --cor-primaria: #5aa897;
+      --cor-secundaria: #39ffb8;
+      --fundo-claro: #f5f7f9;
+      --texto-claro: #2e2e2e;
+      --fundo-escuro: #121b1a;
+      --texto-escuro: #d0f0e6;
+      --input-bg-claro: #e9f0f0;
+      --input-bg-escuro: #203934;
+      --borda-claro: #a8c0c0;
+      --borda-escuro: #3a6c61;
+    }
+
     /* Reset básico */
     * {
       box-sizing: border-box;
     }
 
     body {
-      background: #121b1a;
-      color: #d0f0e6;
+      background: var(--fundo-escuro);
+      color: var(--texto-escuro);
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       padding: 20px;
       max-width: 600px;
       margin: auto;
       user-select: none;
+      transition: background-color 0.4s, color 0.4s;
+    }
+    body.light {
+      background: var(--fundo-claro);
+      color: var(--texto-claro);
     }
 
     header {
@@ -30,7 +48,7 @@
       font-family: 'Orbitron', monospace;
       font-weight: 900;
       font-size: 2.2rem;
-      color: #5aa897;
+      color: var(--cor-primaria);
       margin-bottom: 4px;
     }
 
@@ -46,31 +64,45 @@
       user-select: text;
       color: #79b3a6;
     }
+    body.light label {
+      color: #4f6367;
+    }
 
     input,
     textarea {
       width: 100%;
       padding: 10px 12px;
       margin-top: 6px;
-      border: 1.5px solid #3a6c61;
+      border: 1.5px solid var(--borda-escuro);
       border-radius: 6px;
-      background: #203934;
-      color: #d0f0e6;
+      background: var(--input-bg-escuro);
+      color: var(--texto-escuro);
       font-size: 1rem;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      transition: border-color 0.3s ease;
+      transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
       resize: vertical;
     }
     input:focus,
     textarea:focus {
-      border-color: #5aa897;
+      border-color: var(--cor-primaria);
       outline: none;
       background: #2b4b45;
+    }
+    body.light input,
+    body.light textarea {
+      background: var(--input-bg-claro);
+      border-color: var(--borda-claro);
+      color: var(--texto-claro);
+    }
+    body.light input:focus,
+    body.light textarea:focus {
+      background: #d1e3e3;
+      border-color: var(--cor-primaria);
     }
 
     button {
       margin-top: 25px;
-      background-color: #5aa897;
+      background-color: var(--cor-primaria);
       border: none;
       padding: 12px 0;
       width: 100%;
@@ -92,19 +124,23 @@
     }
 
     .item-group {
-      background: #203934;
+      background: var(--input-bg-escuro);
       padding: 15px 20px;
       margin-top: 25px;
       border-radius: 12px;
       box-shadow: 0 3px 8px rgba(90, 168, 151, 0.3);
       user-select: text;
+      transition: background-color 0.4s;
+    }
+    body.light .item-group {
+      background: var(--input-bg-claro);
     }
 
     .item-group h2 {
       font-family: 'Orbitron', monospace;
       font-weight: 700;
       font-size: 1.3rem;
-      color: #3b7a70;
+      color: var(--cor-primaria);
       margin-bottom: 12px;
     }
 
@@ -112,22 +148,30 @@
       margin-top: 12px;
       color: #7fd9c9;
     }
+    body.light .item-group label {
+      color: #4f6367;
+    }
 
     hr {
       border: none;
-      border-top: 1px dashed #3a6c61;
+      border-top: 1px dashed var(--borda-escuro);
       margin: 15px 0;
       user-select: none;
+      transition: border-color 0.3s;
+    }
+    body.light hr {
+      border-top-color: var(--borda-claro);
     }
 
     .total {
       margin-top: 30px;
       font-size: 1.8rem;
       font-weight: 900;
-      color: #5aa897;
+      color: var(--cor-primaria);
       text-align: center;
       font-family: 'Orbitron', monospace;
       user-select: text;
+      transition: color 0.4s;
     }
 
     /* Migalhas de pão simples */
@@ -138,23 +182,25 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       user-select: text;
     }
+    body.light nav.breadcrumb {
+      color: #4f6367;
+    }
     nav.breadcrumb span {
       margin-right: 6px;
     }
     nav.breadcrumb span::after {
       content: "›";
       margin-left: 6px;
-      color: #3a6c61;
+      color: var(--borda-escuro);
+    }
+    body.light nav.breadcrumb span::after {
+      color: var(--borda-claro);
     }
     nav.breadcrumb span:last-child::after {
       content: "";
     }
 
     /* Footer maroto */
-    :root {
-      --cor-primaria: #5aa897;
-      --cor-secundaria: #39ffb8;
-    }
     .footer-maroto {
       position: fixed;
       bottom: 12px;
@@ -213,9 +259,44 @@
           0 0 18px var(--cor-primaria);
       }
     }
+
+    /* Toggle tema */
+    .tema-toggle {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      background: var(--cor-primaria);
+      border: none;
+      border-radius: 20px;
+      width: 50px;
+      height: 26px;
+      cursor: pointer;
+      box-shadow: 0 0 8px var(--cor-primaria);
+      transition: background-color 0.3s ease;
+      z-index: 9999;
+    }
+    .tema-toggle:before {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.3s ease;
+    }
+    body.light .tema-toggle {
+      background: #3b7a70;
+    }
+    body.light .tema-toggle:before {
+      transform: translateX(24px);
+    }
   </style>
 </head>
 <body>
+
+  <button aria-label="Alternar tema claro e escuro" class="tema-toggle"></button>
 
   <header>
     <nav class="breadcrumb" aria-label="Você está aqui:">
@@ -230,7 +311,7 @@
   <label for="profissional">Profissional</label>
   <input type="text" id="profissional" autocomplete="off" placeholder="Seu nome ou da empresa" />
 
-  <div class="item-group">
+  <div class="item-group" aria-label="Itens personalizados do orçamento">
     <h2>Itens Personalizados</h2>
     <div id="itensExtras"></div>
     <button type="button" onclick="adicionarItem()">+ Adicionar Item</button>
@@ -239,15 +320,33 @@
   <label for="observacoes">Observações</label>
   <textarea id="observacoes" rows="3" placeholder="Detalhes adicionais"></textarea>
 
-  <div class="total">Total: R$ <span id="total">0,00</span></div>
+  <div class="total" aria-live="polite">Total: R$ <span id="total">0,00</span></div>
 
   <button type="button" onclick="gerarPDF()">🧾 Gerar PDF</button>
   <button type="button" onclick="exportarJSON()">💾 Exportar JSON</button>
   <button type="button" onclick="limparTudo()">🧹 Limpar Tudo</button>
 
-  <footer class="footer-maroto" role="contentinfo" aria-label="Rodapé do Orçameintor">
-    <span>🦾 Orçameintor &nbsp;&middot;&nbsp; Desenvolvido por <a href="https://github.com/Ganjabionick8" target="_blank" rel="noopener noreferrer" aria-label="GitHub Ganjabionick8">Ganjabionick8</a> &nbsp;&mdash;&nbsp; 2025</span>
-  </footer>
+  <footer style="
+  background: #121212;
+  color: #aaa;
+  font-size: 14px;
+  text-align: center;
+  padding: 15px 20px;
+  border-top: 1px solid #333;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  user-select: none;
+  line-height: 1.5;
+">
+  <div>© 2025 Orçameintor • Feito com ❤️ por Gabriel Simeone</div>
+  <div style="margin: 6px 0;">
+    Se curtiu, ajuda a manter o projeto vivo! 🙏<br />
+    PIX: <a href="pix:123.456.789-00" style="color: #5aa897; text-decoration: none; font-weight: 700;">biel.simeone@gmail.com</a>
+  </div>
+  <div style="font-style: italic; color: #666;">
+    “Se dinheiro não traz felicidade, pelo menos paga o servidor.” 💸😎
+  </div>
+</footer>
+
 
   <script>
     const itensExtras = [];
@@ -271,28 +370,87 @@
       itensExtras.push(index);
       atualizarTotal();
 
-      // Atualiza total ao mudar qualquer input novo
       const inputs = div.querySelectorAll('input');
       inputs.forEach(input => input.addEventListener('input', atualizarTotal));
+      salvarOrcamentoAutomatico();
     }
 
     function atualizarTotal() {
       let total = 0;
-
       itensExtras.forEach(i => {
         const qtd = parseFloat(document.getElementById(`item_qtd_${i}`).value) || 0;
         const preco = parseFloat(document.getElementById(`item_preco_${i}`).value) || 0;
         total += qtd * preco;
       });
-
       document.getElementById("total").innerText = total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      salvarOrcamentoAutomatico();
     }
 
-    // Atualiza total ao mudar inputs principais (cliente, profissional, observacoes não influenciam no total)
-    document.querySelectorAll("input").forEach(input => {
-      input.addEventListener("input", atualizarTotal);
+    // Salvamento localStorage
+    function salvarOrcamentoAutomatico() {
+      const dados = coletarDados();
+      localStorage.setItem("orcamentoAtual", JSON.stringify(dados));
+    }
+
+    function carregarOrcamento() {
+      const dadosStr = localStorage.getItem("orcamentoAtual");
+      if (!dadosStr) return;
+      const dados = JSON.parse(dadosStr);
+
+      document.getElementById("cliente").value = dados.cliente || "";
+      document.getElementById("profissional").value = dados.profissional || "";
+      document.getElementById("observacoes").value = dados.observacoes || "";
+
+      // Limpa itens atuais
+      const container = document.getElementById("itensExtras");
+      container.innerHTML = "";
+      itensExtras.length = 0;
+
+      if (dados.itensExtras && dados.itensExtras.length) {
+        dados.itensExtras.forEach((item, i) => {
+          adicionarItem();
+          document.getElementById(`item_nome_${i}`).value = item.nome || "";
+          document.getElementById(`item_qtd_${i}`).value = item.qtd || 0;
+          document.getElementById(`item_preco_${i}`).value = item.preco || 0;
+        });
+      }
+      atualizarTotal();
+    }
+
+    function coletarDados() {
+      return {
+        cliente: document.getElementById("cliente").value,
+        profissional: document.getElementById("profissional").value,
+        observacoes: document.getElementById("observacoes").value,
+        itensExtras: itensExtras.map(i => ({
+          nome: document.getElementById(`item_nome_${i}`).value,
+          qtd: document.getElementById(`item_qtd_${i}`).value,
+          preco: document.getElementById(`item_preco_${i}`).value
+        }))
+      };
+    }
+
+    // Tema toggle
+    const btnTema = document.querySelector('.tema-toggle');
+    btnTema.addEventListener('click', () => {
+      document.body.classList.toggle('light');
+      salvarTema();
     });
 
+    function salvarTema() {
+      localStorage.setItem('temaOrcameintor', document.body.classList.contains('light') ? 'light' : 'dark');
+    }
+
+    function carregarTema() {
+      const tema = localStorage.getItem('temaOrcameintor');
+      if (tema === 'light') {
+        document.body.classList.add('light');
+      } else {
+        document.body.classList.remove('light');
+      }
+    }
+
+    // Gerar PDF
     function gerarPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
@@ -307,23 +465,28 @@
       const obs = document.getElementById("observacoes").value || "";
       const total = document.getElementById("total").innerText;
 
+      // Cabeçalho customizado
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(14);
+      doc.setFontSize(18);
+      doc.setTextColor(90, 168, 151);
       doc.text("🦾 Orçameintor", marginLeft, y);
-      y += lineHeight + 2;
+      y += lineHeight + 4;
 
       doc.setFont("helvetica", "normal");
       doc.setFontSize(11);
+      doc.setTextColor(0, 0, 0);
       doc.text(`Cliente: ${cliente}`, marginLeft, y);
       y += lineHeight;
       doc.text(`Profissional: ${profissional}`, marginLeft, y);
       y += lineHeight + 6;
 
       doc.setFont("helvetica", "bold");
+      doc.setTextColor(50, 90, 80);
       doc.text("Itens Orçados:", marginLeft, y);
       y += lineHeight;
 
       doc.setFont("helvetica", "normal");
+      doc.setTextColor(0, 0, 0);
       itensExtras.forEach(i => {
         const nome = document.getElementById(`item_nome_${i}`).value || `Item ${i + 1}`;
         const qtd = parseFloat(document.getElementById(`item_qtd_${i}`).value) || 0;
@@ -336,37 +499,33 @@
 
       y += 6;
       doc.setFont("helvetica", "bold");
+      doc.setTextColor(50, 90, 80);
       doc.text("Observações:", marginLeft, y);
       y += lineHeight;
 
       doc.setFont("helvetica", "normal");
+      doc.setTextColor(0, 0, 0);
       const obsSplit = doc.splitTextToSize(obs, maxLineWidth);
       doc.text(obsSplit, marginLeft, y);
       y += lineHeight * obsSplit.length + 10;
 
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(13);
+      doc.setFontSize(14);
+      doc.setTextColor(90, 168, 151);
       doc.text(`TOTAL: R$ ${total}`, marginLeft, y);
 
       y += lineHeight + 10;
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
+      doc.setTextColor(100);
       doc.text("Gerado com Orçameintor • Desenvolvido por Ganjabionick8", marginLeft, y);
 
       doc.save("orcamento_orcameintor.pdf");
     }
 
+    // Exportar JSON
     function exportarJSON() {
-      const dados = {
-        cliente: document.getElementById("cliente").value,
-        profissional: document.getElementById("profissional").value,
-        observacoes: document.getElementById("observacoes").value,
-        itensExtras: itensExtras.map(i => ({
-          nome: document.getElementById(`item_nome_${i}`).value,
-          qtd: document.getElementById(`item_qtd_${i}`).value,
-          preco: document.getElementById(`item_preco_${i}`).value
-        }))
-      };
+      const dados = coletarDados();
       const blob = new Blob([JSON.stringify(dados, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -375,9 +534,19 @@
       a.click();
     }
 
+    // Limpar tudo
     function limparTudo() {
-      if (confirm("Limpar todos os campos?")) location.reload();
+      if (confirm("Limpar todos os campos?")) {
+        localStorage.removeItem("orcamentoAtual");
+        location.reload();
+      }
     }
+
+    // Carregar dados ao iniciar
+    window.onload = () => {
+      carregarTema();
+      carregarOrcamento();
+    };
   </script>
 
 </body>
