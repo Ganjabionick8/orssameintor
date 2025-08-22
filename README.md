@@ -1,46 +1,31 @@
-Orçameintor
+# 💸 Orçameintor – Controle Financeiro com Personalidade
 
-Descrição:
-Orçamentor é um app de gerenciamento e cálculo de orçamentos, desenvolvido para organizar custos, receitas e fornecer estimativas rápidas e precisas de projetos ou serviços.
+**Orçameintor** é uma ferramenta simples e simbólica pra organizar suas finanças sem perder o bom humor.  
+Ideal pra quem quer controlar gastos, planejar metas e manter o servidor pago com dignidade 🙏
 
-Funcionalidades
+## ✨ Funcionalidades
+- Registro de ganhos e gastos
+- Cálculo automático de saldo
+- Interface leve e direta
+- Humor embutido pra aliviar o boleto
 
-Criação e edição de orçamentos detalhados.
+## 🛠️ Tecnologias
+- HTML5, CSS3 e JavaScript
+- Design minimalista com tema escuro
+- LocalStorage (em breve) para salvar dados no navegador
 
-Cálculo automático de totais e subtotais.
+## 🚀 Como usar
+1. Abrir o app no navegador
+2. Inserir valores de ganhos e gastos
+3. Visualizar saldo e planejar o mês
+4. Rir pra não chorar
 
-Gestão de itens com quantidades, preços unitários e descrições.
+## 🤝 Contribuição
+- Clonar o repositório
+- Realizar alterações
+- Abrir pull request com descrição das mudanças
 
-Exportação de orçamentos em PDF ou outros formatos (dependendo da implementação).
+## 📄 Licença
+Gratuito, simbólico e para fins didáticos.
 
-Interface simples e direta, fácil de usar.
-
-Tecnologias
-
-HTML5, CSS3 e JavaScript.
-
-LocalStorage para salvar orçamentos localmente.
-
-Design minimalista e funcional.
-
-Uso
-
-Abrir o app no navegador ou APK.
-
-Criar um novo orçamento.
-
-Adicionar itens, quantidades e preços.
-
-Visualizar o total e exportar se necessário.
-
-Contribuição
-
-Clonar o repositório.
-
-Realizar alterações.
-
-Abrir pull request com descrição das mudanças.
-
-Licença
-
-Gratuito, educativo e para fins de organização e produtividade.
+👉 [Acesse o projeto aqui](https://ganjabionick8.github.io/orssameintor/)
