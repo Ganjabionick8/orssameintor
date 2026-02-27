@@ -2,553 +2,249 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>🦾 Orçameintor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🦾 Orçameintor | Orçamentos Profissionais</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  
   <style>
     :root {
-      --cor-primaria: #5aa897;
-      --cor-secundaria: #39ffb8;
-      --fundo-claro: #f5f7f9;
-      --texto-claro: #2e2e2e;
-      --fundo-escuro: #121b1a;
-      --texto-escuro: #d0f0e6;
-      --input-bg-claro: #e9f0f0;
-      --input-bg-escuro: #203934;
-      --borda-claro: #a8c0c0;
-      --borda-escuro: #3a6c61;
+      --primaria: #5aa897; --secundaria: #39ffb8; --fundo: #0d1413;
+      --fundo-card: #162421; --texto: #d0f0e6; --borda: #2a4741; --perigo: #bc4749;
     }
+    body.light { --fundo: #f0f4f3; --fundo-card: #ffffff; --texto: #1b2e2b; --borda: #cbdad7; }
 
-    /* Reset básico */
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; transition: all 0.3s ease; }
+    body { background: var(--fundo); color: var(--texto); font-family: 'Inter', sans-serif; margin: 0; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; }
+    .container { width: 100%; max-width: 800px; }
 
-    body {
-      background: var(--fundo-escuro);
-      color: var(--texto-escuro);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      padding: 20px;
-      max-width: 600px;
-      margin: auto;
-      user-select: none;
-      transition: background-color 0.4s, color 0.4s;
-    }
-    body.light {
-      background: var(--fundo-claro);
-      color: var(--texto-claro);
-    }
+    /* Cabeçalho */
+    header { text-align: left; margin-bottom: 40px; border-left: 5px solid var(--primaria); padding-left: 20px; }
+    h1 { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 2.5rem; color: var(--primaria); margin: 0; text-transform: uppercase; letter-spacing: 2px; }
+    .subtitle { font-size: 0.9rem; opacity: 0.7; margin-top: 5px; }
 
-    header {
-      margin-bottom: 15px;
-      user-select: text;
-    }
+    /* Inputs e Cards */
+    .card { background: var(--fundo-card); padding: 25px; border-radius: 16px; border: 1px solid var(--borda); box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-bottom: 20px; }
+    label { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; color: var(--primaria); }
+    input, textarea { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--borda); border-radius: 8px; padding: 12px; color: var(--texto); font-family: 'Inter', sans-serif; margin-bottom: 20px; }
+    input:focus { border-color: var(--secundaria); outline: none; background: rgba(0,0,0,0.3); }
 
-    header h1 {
-      font-family: 'Orbitron', monospace;
-      font-weight: 900;
-      font-size: 2.2rem;
-      color: var(--cor-primaria);
-      margin-bottom: 4px;
-    }
+    /* Tabela de Itens Dinâmica */
+    .item-row { display: grid; grid-template-columns: 2fr 1fr 1fr 50px; gap: 15px; align-items: end; margin-bottom: 15px; animation: slideIn 0.3s ease-out; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .btn-del { background: var(--perigo); color: white; border: none; height: 42px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 20px; }
 
-    header nav {
-      font-size: 0.85rem;
-      color: #7fd9c9;
-    }
+    /* Botões Principais */
+    .actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+    button.main-btn { background: var(--primaria); color: white; border: none; padding: 15px; border-radius: 12px; font-family: 'Orbitron', sans-serif; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(90, 168, 151, 0.3); width: 100%; }
+    button.main-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(90, 168, 151, 0.5); }
 
-    label {
-      display: block;
-      font-weight: 600;
-      margin-top: 15px;
-      user-select: text;
-      color: #79b3a6;
-    }
-    body.light label {
-      color: #4f6367;
-    }
+    /* Totalizador */
+    .total-container { margin: 40px 0; text-align: right; padding: 20px; background: var(--primaria); color: white; border-radius: 12px; }
+    .total-value { font-family: 'Orbitron', sans-serif; font-size: 2.2rem; font-weight: 900; }
 
-    input,
-    textarea {
-      width: 100%;
-      padding: 10px 12px;
-      margin-top: 6px;
-      border: 1.5px solid var(--borda-escuro);
-      border-radius: 6px;
-      background: var(--input-bg-escuro);
-      color: var(--texto-escuro);
-      font-size: 1rem;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
-      resize: vertical;
-    }
-    input:focus,
-    textarea:focus {
-      border-color: var(--cor-primaria);
-      outline: none;
-      background: #2b4b45;
-    }
-    body.light input,
-    body.light textarea {
-      background: var(--input-bg-claro);
-      border-color: var(--borda-claro);
-      color: var(--texto-claro);
-    }
-    body.light input:focus,
-    body.light textarea:focus {
-      background: #d1e3e3;
-      border-color: var(--cor-primaria);
-    }
+    .tema-toggle { position: fixed; top: 20px; right: 20px; padding: 10px; border-radius: 50%; cursor: pointer; background: var(--fundo-card); border: 1px solid var(--borda); z-index: 100; }
 
-    button {
-      margin-top: 25px;
-      background-color: var(--cor-primaria);
-      border: none;
-      padding: 12px 0;
-      width: 100%;
-      color: #f0f7f7;
-      font-weight: 700;
-      font-size: 1.1rem;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      user-select: none;
-      font-family: 'Orbitron', monospace;
-      letter-spacing: 0.05em;
-    }
-    button:hover {
-      background-color: #3b7a70;
-    }
-    button:active {
-      background-color: #2e5e54;
-    }
-
-    .item-group {
-      background: var(--input-bg-escuro);
-      padding: 15px 20px;
-      margin-top: 25px;
-      border-radius: 12px;
-      box-shadow: 0 3px 8px rgba(90, 168, 151, 0.3);
-      user-select: text;
-      transition: background-color 0.4s;
-    }
-    body.light .item-group {
-      background: var(--input-bg-claro);
-    }
-
-    .item-group h2 {
-      font-family: 'Orbitron', monospace;
-      font-weight: 700;
-      font-size: 1.3rem;
-      color: var(--cor-primaria);
-      margin-bottom: 12px;
-    }
-
-    .item-group label {
-      margin-top: 12px;
-      color: #7fd9c9;
-    }
-    body.light .item-group label {
-      color: #4f6367;
-    }
-
-    hr {
-      border: none;
-      border-top: 1px dashed var(--borda-escuro);
-      margin: 15px 0;
-      user-select: none;
-      transition: border-color 0.3s;
-    }
-    body.light hr {
-      border-top-color: var(--borda-claro);
-    }
-
-    .total {
-      margin-top: 30px;
-      font-size: 1.8rem;
-      font-weight: 900;
-      color: var(--cor-primaria);
-      text-align: center;
-      font-family: 'Orbitron', monospace;
-      user-select: text;
-      transition: color 0.4s;
-    }
-
-    /* Migalhas de pão simples */
-    nav.breadcrumb {
-      font-size: 0.85rem;
-      margin-bottom: 12px;
-      color: #79b3a6;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      user-select: text;
-    }
-    body.light nav.breadcrumb {
-      color: #4f6367;
-    }
-    nav.breadcrumb span {
-      margin-right: 6px;
-    }
-    nav.breadcrumb span::after {
-      content: "›";
-      margin-left: 6px;
-      color: var(--borda-escuro);
-    }
-    body.light nav.breadcrumb span::after {
-      color: var(--borda-claro);
-    }
-    nav.breadcrumb span:last-child::after {
-      content: "";
-    }
-
-    /* Footer maroto */
-    .footer-maroto {
-      position: fixed;
-      bottom: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(10, 31, 28, 0.85);
-      color: var(--cor-primaria);
-      font-family: 'Orbitron', monospace;
-      font-weight: 700;
-      font-size: 0.9rem;
-      padding: 8px 18px;
-      border-radius: 24px;
-      box-shadow: 0 0 12px var(--cor-primaria);
-      user-select: none;
-      cursor: default;
-      z-index: 9999;
-      animation: brilho-pulsante 3.5s ease-in-out infinite;
-      text-shadow:
-        0 0 6px var(--cor-primaria),
-        0 0 12px var(--cor-secundaria),
-        0 0 20px var(--cor-primaria);
-      letter-spacing: 0.08em;
-      transition: box-shadow 0.3s ease;
-    }
-    .footer-maroto a {
-      color: var(--cor-secundaria);
-      text-decoration: none;
-      font-weight: 900;
-      transition: color 0.3s ease;
-    }
-    .footer-maroto a:hover,
-    .footer-maroto a:focus {
-      color: #39ffb8;
-      outline: none;
-      text-shadow: 0 0 8px #39ffb8;
-    }
-    @keyframes brilho-pulsante {
-      0%, 100% {
-        box-shadow:
-          0 0 12px var(--cor-primaria),
-          0 0 20px var(--cor-secundaria),
-          0 0 30px var(--cor-primaria);
-        text-shadow:
-          0 0 6px var(--cor-primaria),
-          0 0 14px var(--cor-secundaria),
-          0 0 22px var(--cor-primaria);
-      }
-      50% {
-        box-shadow:
-          0 0 8px var(--cor-primaria),
-          0 0 14px var(--cor-secundaria),
-          0 0 20px var(--cor-primaria);
-        text-shadow:
-          0 0 4px var(--cor-primaria),
-          0 0 10px var(--cor-secundaria),
-          0 0 18px var(--cor-primaria);
-      }
-    }
-
-    /* Toggle tema */
-    .tema-toggle {
-      position: fixed;
-      top: 18px;
-      right: 18px;
-      background: var(--cor-primaria);
-      border: none;
-      border-radius: 20px;
-      width: 50px;
-      height: 26px;
-      cursor: pointer;
-      box-shadow: 0 0 8px var(--cor-primaria);
-      transition: background-color 0.3s ease;
-      z-index: 9999;
-    }
-    .tema-toggle:before {
-      content: "";
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 20px;
-      height: 20px;
-      background: #fff;
-      border-radius: 50%;
-      transition: transform 0.3s ease;
-    }
-    body.light .tema-toggle {
-      background: #3b7a70;
-    }
-    body.light .tema-toggle:before {
-      transform: translateX(24px);
-    }
+    @media (max-width: 600px) { .item-row { grid-template-columns: 1fr; gap: 5px; } .btn-del { width: 100%; margin-bottom: 30px; } }
   </style>
 </head>
-<body>
+<body class="dark">
 
-  <button aria-label="Alternar tema claro e escuro" class="tema-toggle"></button>
+  <div class="tema-toggle" onclick="toggleTema()">🌓</div>
 
-  <header>
-    <nav class="breadcrumb" aria-label="Você está aqui:">
-      <span>Orçameintor</span>
-    </nav>
-    <h1>🦾 Orçameintor</h1>
-  </header>
+  <div class="container">
+    <header>
+      <h1>Orçameintor</h1>
+      <div class="subtitle">O seu trabalho vale muito. Organize e valorize cada detalhe.</div>
+    </header>
 
-  <label for="cliente">Cliente</label>
-  <input type="text" id="cliente" autocomplete="off" placeholder="Nome do cliente" />
+    <div class="card">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div><label>Cliente</label><input type="text" id="cliente" placeholder="Para quem é este projeto?"></div>
+        <div><label>Profissional</label><input type="text" id="profissional" placeholder="Seu nome ou empresa"></div>
+      </div>
+    </div>
 
-  <label for="profissional">Profissional</label>
-  <input type="text" id="profissional" autocomplete="off" placeholder="Seu nome ou da empresa" />
+    <div class="card">
+      <h2 style="font-family: 'Orbitron'; font-size: 1rem; margin: 0 0 20px 0; color: var(--secundaria);">🛠️ Materiais e Peças</h2>
+      <div id="listaItens"></div>
+      <button class="main-btn" style="background: transparent; border: 1px dashed var(--primaria); color: var(--primaria);" onclick="addItem()">+ Adicionar Item</button>
+    </div>
 
-  <div class="item-group" aria-label="Itens personalizados do orçamento">
-    <h2>Itens Personalizados</h2>
-    <div id="itensExtras"></div>
-    <button type="button" onclick="adicionarItem()">+ Adicionar Item</button>
+    <div class="card">
+      <label>Mão de Obra e Observações Técnicas</label>
+      <textarea id="obs" rows="4" placeholder="Descreva aqui o serviço de instalação, pintura ou reparo..."></textarea>
+    </div>
+
+    <div class="total-container">
+      <div style="font-size: 0.8rem; opacity: 0.9;">INVESTIMENTO TOTAL</div>
+      <div class="total-value">R$ <span id="valTotal">0,00</span></div>
+    </div>
+
+    <div class="actions-grid">
+      <button class="main-btn" onclick="gerarPDF()">🧾 Gerar PDF Profissional</button>
+      <button class="main-btn" style="background: var(--fundo-card); border: 1px solid var(--primaria); color: var(--primaria);" onclick="exportJSON()">💾 Salvar Projeto (.json)</button>
+    </div>
+
+    <div style="margin-top: 15px;">
+      <label for="importJson" style="cursor: pointer; text-align: center; border: 1px solid var(--borda); padding: 10px; border-radius: 8px;">📂 Abrir Projeto Salvo</label>
+      <input type="file" id="importJson" style="display: none;" accept=".json" onchange="importJSON(event)">
+    </div>
+
+    <button onclick="limparTudo()" style="width: 100%; margin-top: 20px; background: transparent; color: var(--perigo); border: none; cursor: pointer; font-size: 0.8rem; opacity: 0.6;">🧹 Limpar todos os campos</button>
+
+    <footer style="margin-top: 80px; text-align: center; font-size: 0.8rem; opacity: 0.7; padding-bottom: 50px;">
+      <p>© 2026 Orçameintor • Criado por Gabriel Simeone</p>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 15px; margin-top: 10px;">
+        <button onclick="copiarPix()" id="pixBtn" style="background: transparent; border: 1px solid var(--primaria); color: var(--primaria); padding: 8px 20px; border-radius: 30px; cursor: pointer; font-family: 'Orbitron', sans-serif; font-size: 0.7rem;">☕ APOIE COM UM CAFÉZINHO</button>
+        <div style="display: flex; align-items: center; gap: 8px; opacity: 0.5;">
+           <img src="favicon.png" alt="Logo" style="width: 18px; filter: grayscale(1);">
+              <span>Orçameintor v1.8.0</span>
+        </div>
+      </div>
+    </footer>
   </div>
-
-  <label for="observacoes">Observações</label>
-  <textarea id="observacoes" rows="3" placeholder="Detalhes adicionais"></textarea>
-
-  <div class="total" aria-live="polite">Total: R$ <span id="total">0,00</span></div>
-
-  <button type="button" onclick="gerarPDF()">🧾 Gerar PDF</button>
-  <button type="button" onclick="exportarJSON()">💾 Exportar JSON</button>
-  <button type="button" onclick="limparTudo()">🧹 Limpar Tudo</button>
-
-  <footer style="
-  background: #121212;
-  color: #aaa;
-  font-size: 14px;
-  text-align: center;
-  padding: 15px 20px;
-  border-top: 1px solid #333;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  user-select: none;
-  line-height: 1.5;
-">
-  <div>© 2025 Orçameintor • Feito por Gabriel Simeone</div>
-  <div style="margin: 6px 0;">
-    Se curtiu, ajuda a manter o projeto vivo! 🙏<br />
-    PIX: <a href="pix:123.456.789-00" style="color: #5aa897; text-decoration: none; font-weight: 700;">biel.simeone@gmail.com</a>
-  </div>
-  <div style="font-style: italic; color: #666;">
-    “Dinheiro não traz felicidade mas paga o servidor.” 💸😎
-  </div>
-</footer>
-
 
   <script>
-    const itensExtras = [];
+    let itens = [];
 
-    function adicionarItem() {
-      const container = document.getElementById("itensExtras");
-      const index = itensExtras.length;
-
-      const div = document.createElement("div");
-      div.style.marginBottom = "16px";
-      div.innerHTML = `
-        <label for="item_nome_${index}">Nome do item</label>
-        <input type="text" id="item_nome_${index}" placeholder="Ex: Material, Serviço..." autocomplete="off" />
-        <label for="item_qtd_${index}">Quantidade</label>
-        <input type="number" id="item_qtd_${index}" value="0" min="0" step="1" />
-        <label for="item_preco_${index}">Preço unitário (R$)</label>
-        <input type="number" id="item_preco_${index}" value="0" min="0" step="0.01" />
-        <hr />
-      `;
-      container.appendChild(div);
-      itensExtras.push(index);
-      atualizarTotal();
-
-      const inputs = div.querySelectorAll('input');
-      inputs.forEach(input => input.addEventListener('input', atualizarTotal));
-      salvarOrcamentoAutomatico();
+    function addItem(nome = '', qtd = 0, preco = 0) {
+      itens.push({ id: Date.now(), nome, qtd, preco });
+      render();
     }
 
-    function atualizarTotal() {
-      let total = 0;
-      itensExtras.forEach(i => {
-        const qtd = parseFloat(document.getElementById(`item_qtd_${i}`).value) || 0;
-        const preco = parseFloat(document.getElementById(`item_preco_${i}`).value) || 0;
-        total += qtd * preco;
+    function updateItem(id, field, value) {
+      const item = itens.find(i => i.id === id);
+      if (item) {
+        item[field] = field === 'nome' ? value : parseFloat(value) || 0;
+        calcular();
+      }
+    }
+
+    function removeItem(id) {
+      itens = itens.filter(i => i.id !== id);
+      render();
+    }
+
+    function calcular() {
+      const total = itens.reduce((acc, item) => acc + (item.qtd * item.preco), 0);
+      document.getElementById('valTotal').innerText = total.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+      salvarLocal();
+    }
+
+    function render() {
+      const container = document.getElementById('listaItens');
+      container.innerHTML = '';
+      itens.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'item-row';
+        row.innerHTML = `
+          <div><label>O que será feito?</label><input type="text" value="${item.nome}" placeholder="Ex: Câmera, Tinta..." oninput="updateItem(${item.id}, 'nome', this.value)"></div>
+          <div><label>Qtd</label><input type="number" value="${item.qtd}" oninput="updateItem(${item.id}, 'qtd', this.value)"></div>
+          <div><label>R$ Unitário</label><input type="number" value="${item.preco}" oninput="updateItem(${item.id}, 'preco', this.value)"></div>
+          <button class="btn-del" onclick="removeItem(${item.id})">🗑️</button>
+        `;
+        container.appendChild(row);
       });
-      document.getElementById("total").innerText = total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-      salvarOrcamentoAutomatico();
+      calcular();
     }
 
-    // Salvamento localStorage
-    function salvarOrcamentoAutomatico() {
-      const dados = coletarDados();
-      localStorage.setItem("orcamentoAtual", JSON.stringify(dados));
-    }
-
-    function carregarOrcamento() {
-      const dadosStr = localStorage.getItem("orcamentoAtual");
-      if (!dadosStr) return;
-      const dados = JSON.parse(dadosStr);
-
-      document.getElementById("cliente").value = dados.cliente || "";
-      document.getElementById("profissional").value = dados.profissional || "";
-      document.getElementById("observacoes").value = dados.observacoes || "";
-
-      // Limpa itens atuais
-      const container = document.getElementById("itensExtras");
-      container.innerHTML = "";
-      itensExtras.length = 0;
-
-      if (dados.itensExtras && dados.itensExtras.length) {
-        dados.itensExtras.forEach((item, i) => {
-          adicionarItem();
-          document.getElementById(`item_nome_${i}`).value = item.nome || "";
-          document.getElementById(`item_qtd_${i}`).value = item.qtd || 0;
-          document.getElementById(`item_preco_${i}`).value = item.preco || 0;
-        });
-      }
-      atualizarTotal();
-    }
-
-    function coletarDados() {
-      return {
-        cliente: document.getElementById("cliente").value,
-        profissional: document.getElementById("profissional").value,
-        observacoes: document.getElementById("observacoes").value,
-        itensExtras: itensExtras.map(i => ({
-          nome: document.getElementById(`item_nome_${i}`).value,
-          qtd: document.getElementById(`item_qtd_${i}`).value,
-          preco: document.getElementById(`item_preco_${i}`).value
-        }))
+    function salvarLocal() {
+      const dados = {
+        cliente: document.getElementById('cliente').value,
+        profissional: document.getElementById('profissional').value,
+        obs: document.getElementById('obs').value,
+        itens
       };
+      localStorage.setItem('orcameintor_data', JSON.stringify(dados));
     }
 
-    // Tema toggle
-    const btnTema = document.querySelector('.tema-toggle');
-    btnTema.addEventListener('click', () => {
-      document.body.classList.toggle('light');
-      salvarTema();
-    });
-
-    function salvarTema() {
-      localStorage.setItem('temaOrcameintor', document.body.classList.contains('light') ? 'light' : 'dark');
-    }
-
-    function carregarTema() {
-      const tema = localStorage.getItem('temaOrcameintor');
-      if (tema === 'light') {
-        document.body.classList.add('light');
-      } else {
-        document.body.classList.remove('light');
+    function carregarLocal() {
+      const salvo = localStorage.getItem('orcameintor_data');
+      if (salvo) {
+        const d = JSON.parse(salvo);
+        document.getElementById('cliente').value = d.cliente || '';
+        document.getElementById('profissional').value = d.profissional || '';
+        document.getElementById('obs').value = d.obs || '';
+        itens = d.itens || [];
+        render();
       }
     }
 
-    // Gerar PDF
+    function copiarPix() {
+      navigator.clipboard.writeText("biel.simeone@gmail.com");
+      const btn = document.getElementById('pixBtn');
+      btn.innerText = "✅ CHAVE PIX COPIADA!";
+      setTimeout(() => { btn.innerText = "☕ APOIE COM UM CAFÉZINHO"; }, 3000);
+    }
+
     function gerarPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
+      const cli = document.getElementById('cliente').value || 'Consumidor';
+      const prof = document.getElementById('profissional').value || 'Consultor';
+      const total = document.getElementById('valTotal').innerText;
 
-      let y = 10;
-      const lineHeight = 8;
-      const marginLeft = 10;
-      const maxLineWidth = 190;
+      doc.setFillColor(90, 168, 151); doc.rect(0, 0, 210, 40, 'F');
+      doc.setTextColor(255, 255, 255); doc.setFontSize(22); doc.text("ORÇAMENTO PROFISSIONAL", 15, 25);
+      
+      doc.setTextColor(40, 40, 40); doc.setFontSize(10);
+      doc.text(`EMISSOR: ${prof}`, 15, 50);
+      doc.text(`CLIENTE: ${cli}`, 15, 55);
+      doc.text(`DATA: ${new Date().toLocaleDateString('pt-BR')}`, 155, 50);
 
-      const cliente = document.getElementById("cliente").value || "N/A";
-      const profissional = document.getElementById("profissional").value || "N/A";
-      const obs = document.getElementById("observacoes").value || "";
-      const total = document.getElementById("total").innerText;
-
-      // Cabeçalho customizado
+      let y = 70;
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(18);
-      doc.setTextColor(90, 168, 151);
-      doc.text(" Orçameintor", marginLeft, y);
-      y += lineHeight + 4;
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(11);
-      doc.setTextColor(0, 0, 0);
-      doc.text(`Cliente: ${cliente}`, marginLeft, y);
-      y += lineHeight;
-      doc.text(`Profissional: ${profissional}`, marginLeft, y);
-      y += lineHeight + 6;
-
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(50, 90, 80);
-      doc.text("Itens Orçados:", marginLeft, y);
-      y += lineHeight;
-
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(0, 0, 0);
-      itensExtras.forEach(i => {
-        const nome = document.getElementById(`item_nome_${i}`).value || `Item ${i + 1}`;
-        const qtd = parseFloat(document.getElementById(`item_qtd_${i}`).value) || 0;
-        const preco = parseFloat(document.getElementById(`item_preco_${i}`).value) || 0;
-        const linha = `${nome}: ${qtd} × R$ ${preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} = R$ ${(qtd * preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-        const splitText = doc.splitTextToSize(linha, maxLineWidth);
-        doc.text(splitText, marginLeft, y);
-        y += lineHeight * splitText.length;
+      doc.text("Descrição", 15, y); doc.text("Qtd", 120, y); doc.text("Unit.", 140, y); doc.text("Subtotal", 170, y);
+      doc.line(15, y+2, 195, y+2);
+      
+      y += 10; doc.setFont("helvetica", "normal");
+      itens.forEach(i => {
+        doc.text(i.nome || 'Item', 15, y);
+        doc.text(i.qtd.toString(), 120, y);
+        doc.text(i.preco.toFixed(2), 140, y);
+        doc.text((i.qtd * i.preco).toLocaleString('pt-BR', {minimumFractionDigits: 2}), 170, y);
+        y += 8;
       });
 
-      y += 6;
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(50, 90, 80);
-      doc.text("Observações:", marginLeft, y);
-      y += lineHeight;
+      y += 10; doc.setFont("helvetica", "bold");
+      doc.text(`TOTAL: R$ ${total}`, 145, y + 10);
 
+      y += 25; doc.text("Mão de Obra / Observações:", 15, y);
       doc.setFont("helvetica", "normal");
-      doc.setTextColor(0, 0, 0);
-      const obsSplit = doc.splitTextToSize(obs, maxLineWidth);
-      doc.text(obsSplit, marginLeft, y);
-      y += lineHeight * obsSplit.length + 10;
+      const splitObs = doc.splitTextToSize(document.getElementById('obs').value, 180);
+      doc.text(splitObs, 15, y + 7);
 
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(14);
-      doc.setTextColor(90, 168, 151);
-      doc.text(`TOTAL: R$ ${total}`, marginLeft, y);
-
-      y += lineHeight + 10;
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      doc.setTextColor(100);
-      doc.text("Gerado com Orçameintor • Desenvolvido por Ganjabionick8", marginLeft, y);
-
-      doc.save("orcamento_orcameintor.pdf");
+      doc.save(`orcamento_${cli}.pdf`);
     }
 
-    // Exportar JSON
-    function exportarJSON() {
-      const dados = coletarDados();
-      const blob = new Blob([JSON.stringify(dados, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "orcamento_orcameintor.json";
+    function exportJSON() {
+      const data = localStorage.getItem('orcameintor_data');
+      const blob = new Blob([data], {type: 'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `projeto.json`;
       a.click();
     }
 
-    // Limpar tudo
-    function limparTudo() {
-      if (confirm("Limpar todos os campos?")) {
-        localStorage.removeItem("orcamentoAtual");
-        location.reload();
-      }
+    function importJSON(e) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const d = JSON.parse(event.target.result);
+        document.getElementById('cliente').value = d.cliente;
+        document.getElementById('profissional').value = d.profissional;
+        document.getElementById('obs').value = d.obs;
+        itens = d.itens;
+        render();
+      };
+      reader.readAsText(e.target.files[0]);
     }
 
-    // Carregar dados ao iniciar
-    window.onload = () => {
-      carregarTema();
-      carregarOrcamento();
-    };
+    function toggleTema() { document.body.classList.toggle('light'); }
+    function limparTudo() { if(confirm("Apagar tudo?")) { localStorage.clear(); location.reload(); } }
+    window.onload = carregarLocal;
   </script>
-
 </body>
 </html>
-
