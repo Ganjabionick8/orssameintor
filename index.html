@@ -1,6 +1,294 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orçameintor Pro | Enterprise Edition</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primaria: #5aa897; --secundaria: #39ffb8; --fundo: #0d1413;
+            --fundo-card: #162421; --texto: #d0f0e6; --borda: #2a4741; --perigo: #bc4749;
+        }
+        body.light { --fundo: #f0f4f3; --fundo-card: #ffffff; --texto: #1b2e2b; --borda: #cbdad7; }
+
+        * { box-sizing: border-box; transition: all 0.2s ease; }
+        body { background: var(--fundo); color: var(--texto); font-family: 'Inter', sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 100%; max-width: 850px; }
+
+        header { text-align: left; margin-bottom: 30px; border-left: 5px solid var(--primaria); padding-left: 20px; }
+        h1 { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 2.2rem; color: var(--primaria); margin: 0; text-transform: uppercase; letter-spacing: 2px; }
+
+        .card { background: var(--fundo-card); padding: 20px; border-radius: 16px; border: 1px solid var(--borda); margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        h2 { font-family: 'Orbitron'; font-size: 0.9rem; color: var(--secundaria); margin-top: 0; text-transform: uppercase; margin-bottom: 15px; }
+
+        label { display: block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; color: var(--primaria); }
+        input, textarea, select { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--borda); border-radius: 8px; padding: 12px; color: var(--texto); font-family: 'Inter', sans-serif; margin-bottom: 10px; font-size: 0.9rem; }
+
+        .item-row { display: grid; grid-template-columns: 2fr 100px 1fr 1fr 45px; gap: 10px; align-items: end; margin-bottom: 15px; border-bottom: 1px solid var(--borda); padding-bottom: 15px; }
+        .m2-inputs { display: flex; gap: 5px; }
+        .m2-inputs input { margin-bottom: 0; }
+        
+        .btn-del { background: var(--perigo); color: white; border: none; height: 42px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+        .total-container { margin: 20px 0; text-align: right; padding: 25px; background: var(--primaria); color: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(90, 168, 151, 0.3); }
+        .total-value { font-family: 'Orbitron', sans-serif; font-size: 2.4rem; font-weight: 900; }
+
+        .main-btn { background: var(--primaria); color: white; border: none; padding: 16px; border-radius: 12px; font-family: 'Orbitron', sans-serif; font-weight: 700; cursor: pointer; width: 100%; text-transform: uppercase; letter-spacing: 1px; }
+        .main-btn:hover { filter: brightness(1.1); transform: translateY(-2px); }
+        .actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        .tema-toggle { position: fixed; top: 20px; right: 20px; padding: 12px; border-radius: 50%; cursor: pointer; background: var(--fundo-card); border: 1px solid var(--borda); z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        
+        @media (max-width: 768px) { .item-row { grid-template-columns: 1fr; gap: 5px; } .actions-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body class="dark">
+
+<div class="tema-toggle" onclick="toggleTema()">🌓</div>
+
+<div class="container">
+    <header>
+        <h1>Orçameintor <span style="font-size: 0.8rem; vertical-align: middle; opacity: 0.6;">v2.5 Enterprise</span></h1>
+        <div style="font-size: 0.8rem; opacity: 0.7; letter-spacing: 1px;">SISTEMA DE GESTÃO E PROPOSTAS TÉCNICAS</div>
+    </header>
+
+    <div class="card">
+        <h2>📂 Identificação do Projeto</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div><label>Empresa / Cliente</label><input type="text" id="cliente" placeholder="Razão Social ou Nome"></div>
+            <div><label>Responsável Técnico</label><input type="text" id="profissional" placeholder="Responsável pela Emissão"></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>📅 Planejamento Operacional</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+            <div><label>Prazo Execução (Dias)</label><input type="number" id="prazo" value="1" oninput="calcular()"></div>
+            <div><label>Equipe em Campo</label><input type="number" id="equipe" value="0" oninput="calcular()"></div>
+            <div><label>Custo Diária Base (R$)</label><input type="number" id="diaria" value="0" oninput="calcular()"></div>
+        </div>
+        <p style="font-size: 0.7rem; color: var(--secundaria); margin-top: 8px; font-weight: 600;">Custo Operacional de Mão de Obra: R$ <span id="custoOperacional">0,00</span></p>
+    </div>
+
+    <div class="card">
+        <h2>🛠️ Detalhamento de Serviços e Materiais</h2>
+        <div id="listaItens"></div>
+        <button class="main-btn" style="background: transparent; border: 1px dashed var(--primaria); color: var(--primaria); font-size: 0.8rem;" onclick="addItem()">+ Adicionar Novo Item à Proposta</button>
+    </div>
+
+    <div class="card">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div>
+                <label>Margem de Lucro / BDI (%)</label>
+                <input type="number" id="margem" value="0" oninput="calcular()">
+            </div>
+            <div>
+                <label>Observações e Condições Técnicas</label>
+                <textarea id="obs" rows="2" placeholder="Validade da proposta, garantias, formas de pagamento..." oninput="salvarLocal()"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="total-container">
+        <div style="font-size: 0.75rem; opacity: 0.9; font-weight: 700; letter-spacing: 1px;">VALOR TOTAL DO INVESTIMENTO</div>
+        <div class="total-value">R$ <span id="valTotal">0,00</span></div>
+    </div>
+
+    <div class="actions-grid">
+        <button class="main-btn" onclick="gerarPDF()">🧾 Gerar Proposta Executiva</button>
+        <button class="main-btn" style="background: var(--fundo-card); border: 1px solid var(--primaria); color: var(--primaria);" onclick="exportJSON()">💾 Salvar Banco de Dados</button>
+    </div>
+
+    <button onclick="limparTudo()" style="width: 100%; margin-top: 25px; background: transparent; color: var(--perigo); border: none; cursor: pointer; font-size: 0.7rem; opacity: 0.5; text-transform: uppercase;">Zerar todos os dados do sistema</button>
+
+    <footer style="margin-top: 40px; text-align: center; font-size: 0.7rem; opacity: 0.5; letter-spacing: 1px; font-family: 'Orbitron';">
+        © 2026 ORÇAMEINTOR • ESTRATÉGIA NEXUS PRO
+    </footer>
+</div>
+
+<script>
+    let itens = [];
+
+    function addItem() {
+        itens.push({ id: Date.now(), nome: '', tipo: 'un', v1: 1, v2: 1, preco: 0 });
+        render();
+    }
+
+    function updateItem(id, field, value) {
+        const item = itens.find(i => i.id === id);
+        if (item) {
+            item[field] = (field === 'nome' || field === 'tipo') ? value : parseFloat(value) || 0;
+            calcular();
+        }
+    }
+
+    function removeItem(id) {
+        itens = itens.filter(i => i.id !== id);
+        render();
+    }
+
+    function calcular() {
+        let subtotalItens = 0;
+        itens.forEach(item => {
+            const qtdFinal = item.tipo === 'm2' ? (item.v1 * item.v2) : item.v1;
+            subtotalItens += (qtdFinal * item.preco);
+        });
+
+        const dias = parseFloat(document.getElementById('prazo').value) || 0;
+        const nFunc = parseFloat(document.getElementById('equipe').value) || 0;
+        const vDiaria = parseFloat(document.getElementById('diaria').value) || 0;
+        const custoOperacional = dias * nFunc * vDiaria;
+        
+        document.getElementById('custoOperacional').innerText = custoOperacional.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+
+        const margem = parseFloat(document.getElementById('margem').value) || 0;
+        const baseTotal = subtotalItens + custoOperacional;
+        const total = baseTotal + (baseTotal * (margem / 100));
+        
+        document.getElementById('valTotal').innerText = total.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+        salvarLocal();
+    }
+
+    function render() {
+        const container = document.getElementById('listaItens');
+        container.innerHTML = '';
+        itens.forEach(item => {
+            const row = document.createElement('div');
+            row.className = 'item-row';
+            const inputQtd = item.tipo === 'un' 
+                ? `<input type="number" value="${item.v1}" oninput="updateItem(${item.id}, 'v1', this.value)">`
+                : `<div class="m2-inputs">
+                    <input type="number" value="${item.v1}" placeholder="Larg" oninput="updateItem(${item.id}, 'v1', this.value)">
+                    <input type="number" value="${item.v2}" placeholder="Comp" oninput="updateItem(${item.id}, 'v2', this.value)">
+                   </div>`;
+
+            row.innerHTML = `
+                <div><label>Descrição</label><input type="text" value="${item.nome}" placeholder="Ex: Pintura interna" oninput="updateItem(${item.id}, 'nome', this.value)"></div>
+                <div><label>Unidade</label>
+                    <select onchange="updateItem(${item.id}, 'tipo', this.value)">
+                        <option value="un" ${item.tipo === 'un' ? 'selected' : ''}>Unid/Hora</option>
+                        <option value="m2" ${item.tipo === 'm2' ? 'selected' : ''}>m² (L x C)</option>
+                    </select>
+                </div>
+                <div><label>${item.tipo === 'un' ? 'Qtd' : 'Medidas'}</label>${inputQtd}</div>
+                <div><label>Vlr. Base (R$)</label><input type="number" value="${item.preco}" oninput="updateItem(${item.id}, 'preco', this.value)"></div>
+                <button class="btn-del" onclick="removeItem(${item.id})">🗑️</button>
+            `;
+            container.appendChild(row);
+        });
+        calcular();
+    }
+
+    function salvarLocal() {
+        const dados = {
+            cliente: document.getElementById('cliente').value,
+            profissional: document.getElementById('profissional').value,
+            prazo: document.getElementById('prazo').value,
+            equipe: document.getElementById('equipe').value,
+            diaria: document.getElementById('diaria').value,
+            obs: document.getElementById('obs').value,
+            margem: document.getElementById('margem').value,
+            itens
+        };
+        localStorage.setItem('orcameintor_enterprise_v2', JSON.stringify(dados));
+    }
+
+    function carregarLocal() {
+        const salvo = localStorage.getItem('orcameintor_enterprise_v2');
+        if (salvo) {
+            const d = JSON.parse(salvo);
+            document.getElementById('cliente').value = d.cliente || '';
+            document.getElementById('profissional').value = d.profissional || '';
+            document.getElementById('prazo').value = d.prazo || 1;
+            document.getElementById('equipe').value = d.equipe || 0;
+            document.getElementById('diaria').value = d.diaria || 0;
+            document.getElementById('obs').value = d.obs || '';
+            document.getElementById('margem').value = d.margem || 0;
+            itens = d.itens || [];
+            render();
+        }
+    }
+
+    function gerarPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const cli = document.getElementById('cliente').value || 'Cliente';
+        const prof = document.getElementById('profissional').value || 'Responsável';
+        const prazo = document.getElementById('prazo').value || '-';
+        const total = document.getElementById('valTotal').innerText;
+        const margem = parseFloat(document.getElementById('margem').value) || 0;
+
+        // Estilização Profissional de Header
+        doc.setFillColor(30, 30, 30); doc.rect(0, 0, 210, 45, 'F');
+        doc.setTextColor(90, 168, 151); doc.setFontSize(22); doc.text("PROPOSTA TÉCNICA COMERCIAL", 15, 25);
+        doc.setTextColor(255, 255, 255); doc.setFontSize(10); doc.text(`CRONOGRAMA ESTIMADO: ${prazo} DIAS ÚTEIS`, 15, 35);
+        
+        doc.setTextColor(100, 100, 100); doc.setFontSize(10);
+        doc.text(`RESPONSÁVEL: ${prof.toUpperCase()}`, 15, 55);
+        doc.text(`EMPRESA/CLIENTE: ${cli.toUpperCase()}`, 15, 61);
+        doc.text(`DATA DE EMISSÃO: ${new Date().toLocaleDateString('pt-BR')}`, 145, 55);
+
+        let y = 80;
+        doc.setFont("helvetica", "bold");
+        doc.text("DISCRIMINAÇÃO DOS SERVIÇOS / MATERIAIS", 15, y);
+        doc.text("VALOR (BDI INCL.)", 160, y);
+        doc.setDrawColor(200, 200, 200); doc.line(15, y+2, 195, y+2);
+        
+        y += 10; doc.setFont("helvetica", "normal");
+        itens.forEach(i => {
+            const qtdFinal = i.tipo === 'm2' ? (i.v1 * i.v2) : i.v1;
+            const valorComMargem = (qtdFinal * i.preco) * (1 + margem / 100);
+            let desc = i.nome || 'Serviço';
+            if(i.tipo === 'm2') desc += ` (${i.v1}m x ${i.v2}m)`;
+            doc.text(desc, 15, y);
+            doc.text(`R$ ${valorComMargem.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 160, y);
+            y += 8;
+        });
+
+        // Mão de Obra Operacional
+        const nFunc = parseFloat(document.getElementById('equipe').value) || 0;
+        if(nFunc > 0) {
+            const vDiaria = parseFloat(document.getElementById('diaria').value) || 0;
+            const dias = parseFloat(document.getElementById('prazo').value) || 0;
+            const totalMaoObra = (dias * nFunc * vDiaria) * (1 + margem/100);
+            doc.text("MÃO DE OBRA OPERACIONAL ESPECIALIZADA", 15, y);
+            doc.text(`R$ ${totalMaoObra.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 160, y);
+            y += 8;
+        }
+
+        y += 10; doc.setFillColor(245, 245, 245); doc.rect(130, y, 65, 15, 'F');
+        doc.setFont("helvetica", "bold"); doc.setFontSize(14);
+        doc.text(`TOTAL GERAL: R$ ${total}`, 135, y + 10);
+
+        const obs = document.getElementById('obs').value;
+        if(obs) {
+            y += 35; doc.setFontSize(11); doc.text("CONDIÇÕES TÉCNICAS E COMERCIAIS:", 15, y);
+            doc.setFont("helvetica", "normal"); doc.setFontSize(9);
+            doc.text(doc.splitTextToSize(obs, 180), 15, y + 7);
+        }
+
+        doc.save(`Proposta_Executiva_${cli.replace(/\s+/g, '_')}.pdf`);
+    }
+
+    function exportJSON() {
+        const data = localStorage.getItem('orcameintor_enterprise_v2');
+        const blob = new Blob([data], {type: 'application/json'});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+        a.download = `backup_projeto_${Date.now()}.json`; a.click();
+    }
+
+    function toggleTema() { document.body.classList.toggle('light'); }
+    function limparTudo() { if(confirm("Deseja apagar todos os dados do sistema permanentemente?")) { localStorage.clear(); location.reload(); } }
+    window.onload = carregarLocal;
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="pt-BR">
+<head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>🦾 Orçameintor | Orçamentos Profissionais</title>
@@ -248,3 +536,4 @@
   </script>
 </body>
 </html>
+
