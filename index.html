@@ -1,224 +1,330 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Proposta Comercial | Enterprise</title>
+    <title>🦾 Orçameintor</title>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet" />
+    
     <style>
         :root {
-            --bg: #ffffff; --card: #f8fafc; --text: #1e293b; --primary: #2563eb;
-            --border: #e2e8f0; --input: #ffffff; --muted: #64748b;
+            --primaria: #5aa897; --secundaria: #39ffb8; --fundo: #0d1413;
+            --fundo-card: #162421; --texto: #d0f0e6; --borda: #2a4741; --perigo: #bc4749;
+            --destaque: #f4a261; --fiscal: #4a90e2; --reuniao: #6b5baf;
         }
-        .dark-mode {
-            --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --primary: #3b82f6;
-            --border: #334155; --input: #0f172a; --muted: #94a3b8;
-        }
-        * { box-sizing: border-box; transition: background 0.3s; }
-        body { background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 40px 20px; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 800px; }
+        /* MODO REUNIÃO - ESCONDE O QUE O CLIENTE NÃO PODE VER */
+        body.privacy-mode .sensitive { filter: blur(10px); pointer-events: none; opacity: 0.2; }
         
-        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
-        .brand h1 { font-size: 1.5rem; margin: 0; font-weight: 700; letter-spacing: -0.5px; color: var(--primary); }
-        .brand p { font-size: 0.85rem; color: var(--muted); margin: 5px 0 0; }
+        * { box-sizing: border-box; transition: all 0.2s ease; }
+        body { background: var(--fundo); color: var(--texto); font-family: 'Inter', sans-serif; margin: 0; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 100%; max-width: 950px; }
 
-        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .card-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); border-bottom: 1px solid var(--border); padding-bottom: 10px; }
-
-        label { display: block; font-size: 0.75rem; font-weight: 500; margin-bottom: 6px; }
-        input, textarea, select { width: 100%; padding: 10px; background: var(--input); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: inherit; font-size: 0.9rem; margin-bottom: 15px; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-left: 5px solid var(--primaria); padding-left: 20px; }
+        h1 { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 1.8rem; color: var(--primaria); margin: 0; text-transform: uppercase; }
         
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .card { background: var(--fundo-card); padding: 25px; border-radius: 16px; border: 1px solid var(--borda); margin-bottom: 20px; position: relative; }
+        .card-title { font-family: 'Orbitron'; font-size: 0.75rem; margin-bottom: 20px; color: var(--secundaria); text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center; }
+        
+        label { display: block; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; color: var(--primaria); }
+        input, textarea, select { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--borda); border-radius: 8px; padding: 12px; color: var(--texto); font-family: 'Inter', sans-serif; margin-bottom: 15px; }
+        
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .item-row { display: grid; grid-template-columns: 3fr 80px 120px 40px; gap: 12px; margin-bottom: 10px; }
 
-        .item-row { display: grid; grid-template-columns: 2fr 80px 120px 40px; gap: 12px; align-items: center; margin-bottom: 10px; }
-        .btn { cursor: pointer; border: none; border-radius: 6px; font-weight: 600; padding: 12px 20px; font-size: 0.9rem; }
-        .btn-primary { background: var(--primary); color: white; width: 100%; }
-        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); margin-top: 10px; width: 100%; }
-        .btn-del { background: transparent; color: #ef4444; font-size: 1.2rem; }
+        .btn-main { background: var(--primaria); color: white; border: none; padding: 18px; border-radius: 12px; font-family: 'Orbitron', sans-serif; font-weight: 700; cursor: pointer; width: 100%; font-size: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .btn-main:hover { background: var(--secundaria); color: var(--fundo); }
+        .btn-reuniao { background: var(--reuniao); color: white; border: none; padding: 12px 25px; border-radius: 8px; font-size: 0.7rem; cursor: pointer; margin-bottom: 20px; font-family: 'Orbitron'; font-weight: bold; }
 
-        .total-box { text-align: right; padding: 20px 0; border-top: 2px solid var(--border); }
-        .total-label { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
-        .total-value { font-size: 2rem; font-weight: 800; color: var(--primary); }
+        .total-container { margin: 20px 0; padding: 35px; background: linear-gradient(135deg, #1a2a27 0%, var(--primaria) 100%); color: white; border-radius: 16px; text-align: right; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .total-value { font-family: 'Orbitron', sans-serif; font-size: 3rem; font-weight: 900; }
+        
+        #logo-preview { max-height: 50px; display: none; margin-bottom: 10px; border-radius: 5px; }
+        .badge { font-size: 0.6rem; padding: 3px 10px; border-radius: 10px; background: var(--borda); color: var(--secundaria); font-weight: bold; }
 
-        .theme-toggle { position: fixed; top: 20px; right: 20px; background: var(--card); border: 1px solid var(--border); padding: 10px; border-radius: 50%; cursor: pointer; }
-        #logo-preview { max-height: 40px; display: none; margin-bottom: 10px; }
+        @media (max-width: 600px) { .grid-3, .grid-2, .item-row { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-<button class="theme-toggle" onclick="document.body.classList.toggle('dark-mode')">🌓</button>
-
-<div class="container">
-    <div class="header">
-        <div class="brand">
-            <h1>Orçameintor Pro</h1>
-            <p>Emissor de Propostas Executivas</p>
-        </div>
-        <div style="text-align: right;">
-            <img id="logo-preview">
-            <input type="file" id="file-logo" style="display:none" onchange="uploadLogo(this)">
-            <label for="file-logo" style="cursor:pointer; color: var(--primary);">+ Upload Logo</label>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-title">Identificação Comercial</div>
-        <div class="grid">
-            <div><label>Cliente / Empresa</label><input type="text" id="cli" placeholder="Ex: Nexus Tech"></div>
-            <div><label>Responsável Emissor</label><input type="text" id="resp" placeholder="Seu Nome"></div>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-title">Escopo de Serviços / Materiais</div>
-        <div id="lista-itens"></div>
-        <button class="btn btn-outline" onclick="addItem()">+ Adicionar Item</button>
-    </div>
-
-    <div class="card">
-        <div class="card-title">Custos Operacionais (Opcional)</div>
-        <div class="grid-3">
-            <div><label>Dias de Trabalho</label><input type="number" id="dias" value="0" oninput="calc()"></div>
-            <div><label>Total de Equipe</label><input type="number" id="equipe" value="0" oninput="calc()"></div>
-            <div><label>Custo Diária (R$)</label><input type="number" id="vDia" value="0" oninput="calc()"></div>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-title">Condições de Fechamento</div>
-        <div class="grid">
-            <div><label>Margem de Lucro (%)</label><input type="number" id="mrg" value="0" oninput="calc()"></div>
-            <div><label>Validade da Proposta</label><input type="text" id="val" value="15 dias"></div>
-        </div>
-        <label>Observações Técnicas</label>
-        <textarea id="obs" rows="3" placeholder="Garantia, prazos de entrega, forma de pagamento..."></textarea>
-    </div>
-
-    <div class="total-box">
-        <div class="total-label">INVESTIMENTO TOTAL</div>
-        <div class="total-value">R$ <span id="res-total">0,00</span></div>
-    </div>
-
-    <button class="btn btn-primary" onclick="generatePDF()">EMITIR PROPOSTA PDF</button>
-
-    <p style="text-align: center; font-size: 0.7rem; color: var(--muted); margin-top: 30px;">
-        Gerado por Estratégia Nexus • Sistema Privado
-    </p>
-</div>
-
-<script>
-    let itens = [];
-    let base64Logo = "";
-
-    function uploadLogo(input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = e => {
-                base64Logo = e.target.result;
-                const img = document.getElementById('logo-preview');
-                img.src = base64Logo; img.style.display = 'block';
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-
-    function addItem() {
-        itens.push({ id: Date.now(), d: '', q: 1, v: 0 });
-        render();
-    }
-
-    function u(id, f, v) { 
-        const it = itens.find(x => x.id === id); 
-        it[f] = f === 'd' ? v : parseFloat(v) || 0; 
-        calc(); 
-    }
-
-    function rem(id) { itens = itens.filter(x => x.id !== id); render(); }
-
-    function render() {
-        const c = document.getElementById('lista-itens');
-        c.innerHTML = '';
-        itens.forEach(i => {
-            const div = document.createElement('div');
-            div.className = 'item-row';
-            div.innerHTML = `
-                <input type="text" placeholder="Serviço" value="${i.d}" oninput="u(${i.id},'d',this.value)">
-                <input type="number" placeholder="Qtd" value="${i.q}" oninput="u(${i.id},'q',this.value)">
-                <input type="number" placeholder="Valor" value="${i.v}" oninput="u(${i.id},'v',this.value)">
-                <button class="btn-del" onclick="rem(${i.id})">✕</button>
-            `;
-            c.appendChild(div);
-        });
-        calc();
-    }
-
-    function calc() {
-        let sub = itens.reduce((acc, i) => acc + (i.q * i.v), 0);
-        const d = parseFloat(document.getElementById('dias').value) || 0;
-        const e = parseFloat(document.getElementById('equipe').value) || 0;
-        const v = parseFloat(document.getElementById('vDia').value) || 0;
-        const op = d * e * v;
-        const mrg = (parseFloat(document.getElementById('mrg').value) || 0) / 100;
-        const tot = (sub + op) * (1 + mrg);
-        document.getElementById('res-total').innerText = tot.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-    }
-
-    function generatePDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const cli = document.getElementById('cli').value || 'Cliente';
-        const mrg = (parseFloat(document.getElementById('mrg').value) || 0) / 100;
-        const totalTxt = document.getElementById('res-total').innerText;
-
-        // Visual Limpo no PDF
-        if(base64Logo) try { doc.addImage(base64Logo, 'PNG', 160, 10, 35, 20); } catch(e){}
+    <div class="container">
+        <button class="btn-reuniao" onclick="togglePrivacy()">👁️ MODO LUCRO RESTRITO (ESCONDER CUSTOS INTERNOS)</button>
         
-        doc.setFont("helvetica", "bold"); doc.setFontSize(20); doc.text("PROPOSTA COMERCIAL", 15, 25);
-        doc.setFontSize(10); doc.setFont("helvetica", "normal"); doc.setTextColor(100);
-        doc.text(`RESPONSÁVEL: ${document.getElementById('resp').value || 'Não informado'}`, 15, 35);
-        doc.text(`CLIENTE: ${cli.toUpperCase()}`, 15, 40);
-        doc.text(`DATA: ${new Date().toLocaleDateString('pt-BR')}`, 15, 45);
+        <header>
+            <div>
+                <h1>Orçameintor <span style="color: var(--secundaria)">Pro</span></h1>
+                <div style="font-size: 0.6rem; opacity: 0.6; letter-spacing: 1px;"> | V2.3.0</div>
+            </div>
+            <div style="text-align: right;">
+                <img id="logo-preview">
+                <input type="file" id="file-logo" style="display:none" onchange="uploadLogo(this)">
+                <label for="file-logo" style="cursor:pointer; color: var(--secundaria); font-size: 0.6rem;">[ ADICIONAR LOGOTIPO ]</label>
+                <input type="text" id="revisao" value="REV 01" style="width: 80px; font-size: 0.7rem; text-align: center; margin-top: 5px; background: var(--borda); border:none; height: 25px;">
+            </div>
+        </header>
 
-        let y = 65;
-        doc.setFillColor(240); doc.rect(15, y-5, 180, 8, 'F');
-        doc.setFont(undefined, 'bold'); doc.setTextColor(0);
-        doc.text("DESCRIÇÃO DO SERVIÇO", 20, y); doc.text("VALOR TOTAL (C/ BDI)", 150, y);
-        y += 10; doc.setFont(undefined, 'normal');
+        <div class="card">
+            <div class="card-title">📄 Identificação da Proposta</div>
+            <div class="grid-2">
+                <div><label>Cliente / Empresa Requisitante</label><input type="text" id="cliente" placeholder="Ex: Multinacional Logística S.A."></div>
+                <div><label>Consultor Responsável</label><input type="text" id="profissional" placeholder="Seu Nome Completo"></div>
+            </div>
+        </div>
 
-        // Itens
-        itens.forEach(i => {
-            if(y > 270) { doc.addPage(); y = 20; }
-            const vComp = (i.q * i.v) * (1 + mrg);
-            doc.text(i.d || 'Serviço Geral', 20, y);
-            doc.text(`R$ ${vComp.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 150, y);
-            y += 8;
-        });
+        <div class="card">
+            <div class="card-title">📦 Escopo de Materiais e Serviços <span class="badge">PRODUTOS</span></div>
+            <div id="listaItens"></div>
+            <button style="background:none; border: 1px dashed var(--primaria); color: var(--primaria); width: 100%; padding: 12px; cursor: pointer; border-radius: 8px; font-weight: bold;" onclick="addItem()">+ INSERIR NOVO ITEM NO ESCOPO</button>
+        </div>
 
-        // Condicional Mão de Obra
-        const d = parseFloat(document.getElementById('dias').value) || 0;
-        const e = parseFloat(document.getElementById('equipe').value) || 0;
-        if(d > 0 && e > 0) {
-            const vOp = (d * e * (parseFloat(document.getElementById('vDia').value) || 0)) * (1 + mrg);
-            doc.text(`Mobilização de Equipe (${d} dias / ${e} pessoas)`, 20, y);
-            doc.text(`R$ ${vOp.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 150, y);
-            y += 10;
+        <div class="card sensitive" style="border-left: 4px solid var(--destaque);">
+            <div class="card-title" style="color: var(--destaque);">⚙️ Engenharia de Custos e Logística <span class="badge">INTERNO</span></div>
+            <div class="grid-3">
+                <div><label>Prazo de Obra (Dias)</label><input type="number" id="dias" value="0" oninput="calc()"></div>
+                <div><label>Tamanho da Equipe</label><input type="number" id="equipe" value="0" oninput="calc()"></div>
+                <div><label>Diária por Pessoa (R$)</label><input type="number" id="vDiaria" value="0" oninput="calc()"></div>
+            </div>
+            <div class="grid-3">
+                <div><label>Combustível (Total Obra)</label><input type="number" id="gasolina" value="0" oninput="calc()"></div>
+                <div><label>Alimentação (Total Obra)</label><input type="number" id="almoco" value="0" oninput="calc()"></div>
+                <div>
+                    <label>Fator de Complexidade</label>
+                    <select id="complexidade" onchange="calc()">
+                        <option value="1">Padrão (Sem Adicional)</option>
+                        <option value="1.05">Moderada (+5%)</option>
+                        <option value="1.15">Alta (+15%)</option>
+                        <option value="1.25">Risco Crítico (+25%)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="card sensitive" style="border-left: 4px solid var(--fiscal);">
+            <div class="card-title" style="color: var(--fiscal);">⚖️ Estratégia Fiscal e BDI <span class="badge">LUCRO</span></div>
+            <div class="grid-2">
+                <div><label>Margem de Lucro / BDI (%)</label><input type="number" id="margem" value="0" oninput="calc()"></div>
+                <div><label>Impostos Sobre Nota (ISS/NF %)</label><input type="number" id="imposto" value="0" oninput="calc()"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">📝 Detalhes Contratuais e Entrega</div>
+            <div class="grid-2">
+                <div><label>Validade da Proposta</label><input type="text" id="validade" value="15 dias úteis"></div>
+                <div><label>Data Prevista de Início</label><input type="date" id="dataInicio"></div>
+            </div>
+            <label>Termos de Garantia e Condições de Pagamento</label>
+            <textarea id="termos" rows="4">1. GARANTIA: 90 dias conforme CDC.
+2. PAGAMENTO: 50% na aprovação e 50% na conclusão.
+3. INFRAESTRUTURA: Por conta do contratante, salvo acordado em contrato.
+4. CANCELAMENTO: Sujeito a multa de 20% após mobilização.</textarea>
+            <label>Observações Técnicas</label>
+            <textarea id="notas" rows="2" placeholder="Ex: Instalação após horário comercial..."></textarea>
+        </div>
+
+        <div class="total-container">
+            <div style="font-size: 0.7rem; letter-spacing: 2px; opacity: 0.8;">VALOR TOTAL DO INVESTIMENTO</div>
+            <div class="total-value">R$ <span id="resTotal">0,00</span></div>
+        </div>
+
+        <div class="grid-2">
+            <button class="btn-main" onclick="gerarPDF()">📄 EMITIR PROPOSTA PROFISSIONAL (PDF)</button>
+            <button class="btn-main" style="background: #111; border: 1px solid var(--borda); color: var(--primaria);" onclick="exportJSON()">💾 SALVAR BACKUP DO PROJETO</button>
+        </div>
+    </div>
+
+    <script>
+        let itens = [];
+        let base64Logo = "";
+
+        function togglePrivacy() { document.body.classList.toggle('privacy-mode'); }
+
+        function uploadLogo(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    base64Logo = e.target.result;
+                    const img = document.getElementById('logo-preview');
+                    img.src = base64Logo; img.style.display = 'block';
+                    salvar();
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
         }
 
-        y += 5; doc.setFontSize(12); doc.setFont(undefined, 'bold');
-        doc.text(`TOTAL DO INVESTIMENTO: R$ ${totalTxt}`, 110, y);
-
-        const obs = document.getElementById('obs').value;
-        if(obs) {
-            y += 20; doc.setFontSize(10); doc.text("OBSERVAÇÕES E CONDIÇÕES:", 15, y);
-            doc.setFont(undefined, 'normal');
-            doc.text(doc.splitTextToSize(obs, 175), 15, y + 7);
+        function addItem(n='', q=1, p=0) {
+            itens.push({ id: Date.now(), n, q, p });
+            render();
         }
 
-        doc.setFontSize(8); doc.text(`Validade da Proposta: ${document.getElementById('val').value}`, 15, 285);
-        doc.save(`Proposta_${cli}.pdf`);
-    }
-</script>
+        function u(id, f, v) {
+            const i = itens.find(x => x.id === id);
+            i[f] = f === 'n' ? v : parseFloat(v) || 0;
+            calc();
+        }
+
+        function rem(id) { itens = itens.filter(x => x.id !== id); render(); }
+
+        function render() {
+            const cont = document.getElementById('listaItens');
+            cont.innerHTML = '';
+            itens.forEach(i => {
+                const row = document.createElement('div');
+                row.className = 'item-row';
+                row.innerHTML = `
+                    <input type="text" value="${i.n}" placeholder="Ex: Câmera IP 4K Intelbras" oninput="u(${i.id}, 'n', this.value)">
+                    <input type="number" value="${i.q}" oninput="u(${i.id}, 'q', this.value)">
+                    <div class="sensitive"><input type="number" value="${i.p}" placeholder="Custo R$" oninput="u(${i.id}, 'p', this.value)"></div>
+                    <button style="background:transparent; border:none; color:var(--perigo); cursor:pointer; font-weight:bold;" onclick="rem(${i.id})">✕</button>
+                `;
+                cont.appendChild(row);
+            });
+            calc();
+        }
+
+        function calc() {
+            // Soma dos produtos
+            const subtotalProdutos = itens.reduce((acc, i) => acc + (i.q * i.p), 0);
+            
+            // Custos Logísticos (Diárias + Gasolina + Rango)
+            const custosOperacionais = ( (parseFloat(document.getElementById('dias').value)||0) * (parseFloat(document.getElementById('equipe').value)||0) * (parseFloat(document.getElementById('vDiaria').value)||0) ) 
+                                     + (parseFloat(document.getElementById('gasolina').value)||0) 
+                                     + (parseFloat(document.getElementById('almoco').value)||0);
+            
+            const fatorComplexidade = parseFloat(document.getElementById('complexidade').value) || 1;
+            const fatorBDI = 1 + ((parseFloat(document.getElementById('margem').value)||0) / 100);
+            const fatorImposto = 1 + ((parseFloat(document.getElementById('imposto').value)||0) / 100);
+            
+            // Cálculo Final: (Produtos + Logística) * Complexidade * Lucro * Impostos
+            const total = (subtotalProdutos + custosOperacionais) * fatorComplexidade * fatorBDI * fatorImposto;
+            
+            document.getElementById('resTotal').innerText = total.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            salvar();
+        }
+
+        function gerarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const bdi = 1 + ((parseFloat(document.getElementById('margem').value)||0) / 100);
+            const imp = 1 + ((parseFloat(document.getElementById('imposto').value)||0) / 100);
+            const comp = parseFloat(document.getElementById('complexidade').value) || 1;
+            const fatorFinal = bdi * imp * comp;
+
+            // Cabeçalho Executivo
+            doc.setFillColor(13, 20, 19); doc.rect(0, 0, 210, 45, 'F');
+            if(base64Logo) doc.addImage(base64Logo, 'PNG', 160, 10, 35, 25);
+            
+            doc.setTextColor(90, 168, 151); doc.setFontSize(22); doc.text("PROPOSTA TÉCNICA COMERCIAL", 15, 25);
+            doc.setTextColor(200); doc.setFontSize(9); doc.text(`${document.getElementById('revisao').value} | EMITIDO POR: ${document.getElementById('profissional').value.toUpperCase()}`, 15, 35);
+
+            doc.setTextColor(60); doc.setFontSize(10);
+            doc.text(`CLIENTE: ${document.getElementById('cliente').value.toUpperCase()}`, 15, 55);
+            doc.text(`DATA: ${new Date().toLocaleDateString('pt-BR')}`, 155, 55);
+
+            let y = 70;
+            doc.setFillColor(240); doc.rect(15, y-5, 180, 8, 'F');
+            doc.setFont(undefined, 'bold'); doc.setTextColor(0);
+            doc.text("DESCRIÇÃO DOS SERVIÇOS E MATERIAIS", 20, y); doc.text("TOTAL (R$)", 160, y);
+            
+            y += 10; doc.setFont(undefined, 'normal');
+            itens.forEach(i => {
+                const valorComMargem = (i.q * i.p) * fatorFinal;
+                doc.text(`${i.n || 'Serviço Técnico'} (x${i.q})`, 20, y);
+                doc.text(valorComMargem.toLocaleString('pt-BR', {minimumFractionDigits: 2}), 160, y);
+                y += 8;
+            });
+
+            // Logística oculta no PDF como "Serviços de Engenharia"
+            const diasObra = parseFloat(document.getElementById('dias').value) || 0;
+            if(diasObra > 0) {
+                const totalLogistica = ( (diasObra * (parseFloat(document.getElementById('equipe').value)||0) * (parseFloat(document.getElementById('vDiaria').value)||0)) + (parseFloat(document.getElementById('gasolina').value)||0) + (parseFloat(document.getElementById('almoco').value)||0) ) * fatorFinal;
+                doc.text(`Mobilização, Mão de Obra e Logística (${diasObra} dias)`, 20, y);
+                doc.text(totalLogistica.toLocaleString('pt-BR', {minimumFractionDigits: 2}), 160, y);
+                y += 10;
+            }
+
+            doc.setFontSize(14); doc.setFont(undefined, 'bold');
+            doc.text(`INVESTIMENTO TOTAL: R$ ${document.getElementById('resTotal').innerText}`, 95, y + 10);
+
+            // Cronograma Simples
+            y += 25;
+            doc.setFontSize(10); doc.text("CRONOGRAMA E VALIDADE:", 15, y);
+            doc.setFont(undefined, 'normal'); doc.setFontSize(9);
+            doc.text(`Previsão de Início: ${document.getElementById('dataInicio').value || 'A combinar'} | Prazo de Execução: ${diasObra} dias úteis.`, 15, y + 6);
+            doc.text(`Validade desta Proposta: ${document.getElementById('validade').value}`, 15, y + 12);
+
+            // Termos Jurídicos
+            y += 25;
+            doc.setFontSize(10); doc.setFont(undefined, 'bold'); doc.text("TERMOS E CONDIÇÕES:", 15, y);
+            doc.setFont(undefined, 'normal'); doc.setFontSize(8);
+            const linhasTermos = doc.splitTextToSize(document.getElementById('termos').value, 180);
+            doc.text(linhasTermos, 15, y + 6);
+
+            // Rodapé
+            doc.setFontSize(7); doc.setTextColor(150);
+            doc.text("Este documento é uma proposta comercial e técnica. Valores sujeitos a alteração após validade.", 15, 285);
+            
+            doc.save(`Proposta_${document.getElementById('cliente').value || 'Nova'}.pdf`);
+        }
+
+        function salvar() {
+            const dados = {
+                cli: document.getElementById('cliente').value,
+                prof: document.getElementById('profissional').value,
+                rev: document.getElementById('revisao').value,
+                dias: document.getElementById('dias').value,
+                eq: document.getElementById('equipe').value,
+                vd: document.getElementById('vDiaria').value,
+                gas: document.getElementById('gasolina').value,
+                alm: document.getElementById('almoco').value,
+                comp: document.getElementById('complexidade').value,
+                mrg: document.getElementById('margem').value,
+                imp: document.getElementById('imposto').value,
+                term: document.getElementById('termos').value,
+                notas: document.getElementById('notas').value,
+                val: document.getElementById('validade').value,
+                dt: document.getElementById('dataInicio').value,
+                itens: itens,
+                logo: base64Logo
+            };
+            localStorage.setItem('orc_ultimate_v23', JSON.stringify(dados));
+        }
+
+        function carregar() {
+            const s = localStorage.getItem('orc_ultimate_v23');
+            if(s) {
+                const d = JSON.parse(s);
+                document.getElementById('cliente').value = d.cli || '';
+                document.getElementById('profissional').value = d.prof || '';
+                document.getElementById('revisao').value = d.rev || 'REV 01';
+                document.getElementById('dias').value = d.dias || 0;
+                document.getElementById('equipe').value = d.eq || 0;
+                document.getElementById('vDiaria').value = d.vd || 0;
+                document.getElementById('gasolina').value = d.gas || 0;
+                document.getElementById('almoco').value = d.alm || 0;
+                document.getElementById('complexidade').value = d.comp || 1;
+                document.getElementById('margem').value = d.mrg || 0;
+                document.getElementById('imposto').value = d.imp || 0;
+                document.getElementById('termos').value = d.term || '';
+                document.getElementById('notas').value = d.notas || '';
+                document.getElementById('validade').value = d.val || '15 dias úteis';
+                document.getElementById('dataInicio').value = d.dt || '';
+                itens = d.itens || [];
+                if(d.logo) { base64Logo = d.logo; document.getElementById('logo-preview').src = d.logo; document.getElementById('logo-preview').style.display = 'block'; }
+                render();
+            }
+        }
+
+        function exportJSON() {
+            const blob = new Blob([localStorage.getItem('orc_ultimate_v23')], {type: 'application/json'});
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+            a.download = `PROJETO_FULL_${document.getElementById('cliente').value || 'BACKUP'}.json`; a.click();
+        }
+
+        window.onload = carregar;
+    </script>
 </body>
 </html>
