@@ -135,12 +135,14 @@
         </div>
     </div>
 
-    <script>
+        <script>
         let itens = [];
         let base64Logo = "";
 
+        // MODO PRIVACIDADE (BLUR NOS CUSTOS)
         function togglePrivacy() { document.body.classList.toggle('privacy-mode'); }
 
+        // GESTÃO DE LOGOTIPO
         function uploadLogo(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
@@ -154,6 +156,7 @@
             }
         }
 
+        // LÓGICA DE ITENS (ESCOPO)
         function addItem(n='', q=1, p=0) {
             itens.push({ id: Date.now(), n, q, p });
             render();
@@ -161,11 +164,16 @@
 
         function u(id, f, v) {
             const i = itens.find(x => x.id === id);
-            i[f] = f === 'n' ? v : parseFloat(v) || 0;
-            calc();
+            if(i) {
+                i[f] = f === 'n' ? v : (parseFloat(v) || 0);
+                calc();
+            }
         }
 
-        function rem(id) { itens = itens.filter(x => x.id !== id); render(); }
+        function rem(id) { 
+            itens = itens.filter(x => x.id !== id); 
+            render(); 
+        }
 
         function render() {
             const cont = document.getElementById('listaItens');
@@ -174,36 +182,39 @@
                 const row = document.createElement('div');
                 row.className = 'item-row';
                 row.innerHTML = `
-                    <input type="text" value="${i.n}" placeholder="Ex: Câmera IP 4K Intelbras" oninput="u(${i.id}, 'n', this.value)">
-                    <input type="number" value="${i.q}" oninput="u(${i.id}, 'q', this.value)">
+                    <input type="text" value="${i.n}" placeholder="Descrição do item/serviço" oninput="u(${i.id}, 'n', this.value)">
+                    <input type="number" value="${i.q}" placeholder="Qtd" oninput="u(${i.id}, 'q', this.value)">
                     <div class="sensitive"><input type="number" value="${i.p}" placeholder="Custo R$" oninput="u(${i.id}, 'p', this.value)"></div>
-                    <button style="background:transparent; border:none; color:var(--perigo); cursor:pointer; font-weight:bold;" onclick="rem(${i.id})">✕</button>
+                    <button style="background:transparent; border:none; color:var(--perigo); cursor:pointer; font-size:1.2rem;" onclick="rem(${i.id})">✕</button>
                 `;
                 cont.appendChild(row);
             });
             calc();
         }
 
+        // ENGENHARIA DE CUSTOS (MATEMÁTICA N2)
         function calc() {
-            // Soma dos produtos
-            const subtotalProdutos = itens.reduce((acc, i) => acc + (i.q * i.p), 0);
+            const subProdutos = itens.reduce((acc, i) => acc + ((parseFloat(i.q)||0) * (parseFloat(i.p)||0)), 0);
             
-            // Custos Logísticos (Diárias + Gasolina + Rango)
-            const custosOperacionais = ( (parseFloat(document.getElementById('dias').value)||0) * (parseFloat(document.getElementById('equipe').value)||0) * (parseFloat(document.getElementById('vDiaria').value)||0) ) 
-                                     + (parseFloat(document.getElementById('gasolina').value)||0) 
-                                     + (parseFloat(document.getElementById('almoco').value)||0);
+            const d = parseFloat(document.getElementById('dias').value) || 0;
+            const e = parseFloat(document.getElementById('equipe').value) || 0;
+            const v = parseFloat(document.getElementById('vDiaria').value) || 0;
+            const g = parseFloat(document.getElementById('gasolina').value) || 0;
+            const a = parseFloat(document.getElementById('almoco').value) || 0;
             
-            const fatorComplexidade = parseFloat(document.getElementById('complexidade').value) || 1;
-            const fatorBDI = 1 + ((parseFloat(document.getElementById('margem').value)||0) / 100);
-            const fatorImposto = 1 + ((parseFloat(document.getElementById('imposto').value)||0) / 100);
-            
-            // Cálculo Final: (Produtos + Logística) * Complexidade * Lucro * Impostos
-            const total = (subtotalProdutos + custosOperacionais) * fatorComplexidade * fatorBDI * fatorImposto;
-            
-            document.getElementById('resTotal').innerText = total.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            const custosOp = (d * e * v) + g + a;
+            const complex = parseFloat(document.getElementById('complexidade').value) || 1;
+            const margem = 1 + ((parseFloat(document.getElementById('margem').value) || 0) / 100);
+            const imposto = 1 + ((parseFloat(document.getElementById('imposto').value) || 0) / 100);
+
+            // Cálculo em cascata: (Base + Logística) * Dificuldade * Lucro * Imposto
+            const totalFinal = (subProdutos + custosOp) * complex * margem * imposto;
+
+            document.getElementById('resTotal').innerText = totalFinal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
             salvar();
         }
 
+        // EMISSÃO DE PDF PROFISSIONAL
         function gerarPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
@@ -213,90 +224,86 @@
             const comp = parseFloat(document.getElementById('complexidade').value) || 1;
             const fatorFinal = bdi * imp * comp;
 
-            // Cabeçalho Executivo
-            doc.setFillColor(13, 20, 19); doc.rect(0, 0, 210, 45, 'F');
-            if(base64Logo) doc.addImage(base64Logo, 'PNG', 160, 10, 35, 25);
-            
-            doc.setTextColor(90, 168, 151); doc.setFontSize(22); doc.text("PROPOSTA TÉCNICA COMERCIAL", 15, 25);
-            doc.setTextColor(200); doc.setFontSize(9); doc.text(`${document.getElementById('revisao').value} | EMITIDO POR: ${document.getElementById('profissional').value.toUpperCase()}`, 15, 35);
+            // Cabeçalho Dark Mode
+            doc.setFillColor(13, 20, 19); doc.rect(0, 0, 210, 40, 'F');
+            if(base64Logo) doc.addImage(base64Logo, 'JPEG', 170, 5, 30, 30);
 
-            doc.setTextColor(60); doc.setFontSize(10);
-            doc.text(`CLIENTE: ${document.getElementById('cliente').value.toUpperCase()}`, 15, 55);
-            doc.text(`DATA: ${new Date().toLocaleDateString('pt-BR')}`, 155, 55);
-
-            let y = 70;
-            doc.setFillColor(240); doc.rect(15, y-5, 180, 8, 'F');
-            doc.setFont(undefined, 'bold'); doc.setTextColor(0);
-            doc.text("DESCRIÇÃO DOS SERVIÇOS E MATERIAIS", 20, y); doc.text("TOTAL (R$)", 160, y);
+            doc.setTextColor(90, 168, 151); doc.setFontSize(18); doc.setFont(undefined, 'bold');
+            doc.text("PROPOSTA COMERCIAL", 15, 20);
             
-            y += 10; doc.setFont(undefined, 'normal');
+            doc.setTextColor(200); doc.setFontSize(8); doc.setFont(undefined, 'normal');
+            doc.text(`EMISSOR: ${document.getElementById('profissional').value.toUpperCase()}`, 15, 28);
+            doc.text(`REVISÃO: ${document.getElementById('revisao').value} | DATA: ${new Date().toLocaleDateString('pt-BR')}`, 15, 33);
+
+            doc.setTextColor(40); doc.setFontSize(10);
+            doc.text(`CLIENTE: ${document.getElementById('cliente').value.toUpperCase()}`, 15, 50);
+            doc.line(15, 52, 195, 52);
+
+            let y = 65;
+            doc.setFont(undefined, 'bold');
+            doc.text("DESCRIÇÃO TÉCNICA", 15, y); doc.text("VALOR TOTAL (R$)", 165, y);
+            y += 5; doc.line(15, y, 195, y);
+            y += 10;
+
+            doc.setFont(undefined, 'normal');
             itens.forEach(i => {
-                const valorComMargem = (i.q * i.p) * fatorFinal;
-                doc.text(`${i.n || 'Serviço Técnico'} (x${i.q})`, 20, y);
-                doc.text(valorComMargem.toLocaleString('pt-BR', {minimumFractionDigits: 2}), 160, y);
+                const totalExibido = (i.q * i.p) * fatorFinal;
+                doc.text(`${i.n || 'Serviço/Produto'} (x${i.q})`, 15, y);
+                doc.text(totalExibido.toLocaleString('pt-BR', {minimumFractionDigits: 2}), 165, y);
                 y += 8;
+                if(y > 270) { doc.addPage(); y = 20; }
             });
 
-            // Logística oculta no PDF como "Serviços de Engenharia"
-            const diasObra = parseFloat(document.getElementById('dias').value) || 0;
-            if(diasObra > 0) {
-                const totalLogistica = ( (diasObra * (parseFloat(document.getElementById('equipe').value)||0) * (parseFloat(document.getElementById('vDiaria').value)||0)) + (parseFloat(document.getElementById('gasolina').value)||0) + (parseFloat(document.getElementById('almoco').value)||0) ) * fatorFinal;
-                doc.text(`Mobilização, Mão de Obra e Logística (${diasObra} dias)`, 20, y);
-                doc.text(totalLogistica.toLocaleString('pt-BR', {minimumFractionDigits: 2}), 160, y);
-                y += 10;
+            // Logística oculta no PDF como serviço de engenharia
+            const dObra = parseFloat(document.getElementById('dias').value) || 0;
+            if(dObra > 0) {
+                const totalLog = ( (dObra * (parseFloat(document.getElementById('equipe').value)||0) * (parseFloat(document.getElementById('vDiaria').value)||0)) + (parseFloat(document.getElementById('gasolina').value)||0) + (parseFloat(document.getElementById('almoco').value)||0) ) * fatorFinal;
+                doc.text(`Mão de Obra e Mobilização Técnica (${dObra} dias)`, 15, y);
+                doc.text(totalLog.toLocaleString('pt-BR', {minimumFractionDigits: 2}), 165, y);
+                y += 15;
             }
 
-            doc.setFontSize(14); doc.setFont(undefined, 'bold');
-            doc.text(`INVESTIMENTO TOTAL: R$ ${document.getElementById('resTotal').innerText}`, 95, y + 10);
+            // TOTAL DE IMPACTO
+            doc.setFillColor(90, 168, 151); doc.rect(140, y-6, 55, 12, 'F');
+            doc.setTextColor(255); doc.setFontSize(12); doc.setFont(undefined, 'bold');
+            doc.text(`TOTAL: R$ ${document.getElementById('resTotal').innerText}`, 142, y + 2);
 
-            // Cronograma Simples
+            // Notas e Termos
             y += 25;
-            doc.setFontSize(10); doc.text("CRONOGRAMA E VALIDADE:", 15, y);
-            doc.setFont(undefined, 'normal'); doc.setFontSize(9);
-            doc.text(`Previsão de Início: ${document.getElementById('dataInicio').value || 'A combinar'} | Prazo de Execução: ${diasObra} dias úteis.`, 15, y + 6);
-            doc.text(`Validade desta Proposta: ${document.getElementById('validade').value}`, 15, y + 12);
+            doc.setTextColor(40); doc.setFontSize(9); doc.text("CONDIÇÕES E GARANTIA:", 15, y);
+            doc.setFont(undefined, 'normal');
+            const termos = doc.splitTextToSize(document.getElementById('termos').value, 175);
+            doc.text(termos, 15, y + 6);
 
-            // Termos Jurídicos
-            y += 25;
-            doc.setFontSize(10); doc.setFont(undefined, 'bold'); doc.text("TERMOS E CONDIÇÕES:", 15, y);
-            doc.setFont(undefined, 'normal'); doc.setFontSize(8);
-            const linhasTermos = doc.splitTextToSize(document.getElementById('termos').value, 180);
-            doc.text(linhasTermos, 15, y + 6);
+            const observacoes = document.getElementById('notas').value;
+            if(observacoes) {
+                y += (termos.length * 5) + 10;
+                doc.setFont(undefined, 'bold'); doc.text("OBSERVAÇÕES:", 15, y);
+                doc.setFont(undefined, 'normal'); doc.text(observacoes, 15, y + 5);
+            }
 
-            // Rodapé
-            doc.setFontSize(7); doc.setTextColor(150);
-            doc.text("Este documento é uma proposta comercial e técnica. Valores sujeitos a alteração após validade.", 15, 285);
-            
-            doc.save(`Proposta_${document.getElementById('cliente').value || 'Nova'}.pdf`);
+            doc.save(`Orcamento_${document.getElementById('cliente').value.replace(/\s+/g, '_') || 'Biel'}.pdf`);
         }
 
+        // PERSISTÊNCIA DE DADOS (LOCALSTORAGE)
         function salvar() {
-            const dados = {
-                cli: document.getElementById('cliente').value,
-                prof: document.getElementById('profissional').value,
-                rev: document.getElementById('revisao').value,
-                dias: document.getElementById('dias').value,
-                eq: document.getElementById('equipe').value,
-                vd: document.getElementById('vDiaria').value,
-                gas: document.getElementById('gasolina').value,
-                alm: document.getElementById('almoco').value,
-                comp: document.getElementById('complexidade').value,
-                mrg: document.getElementById('margem').value,
-                imp: document.getElementById('imposto').value,
-                term: document.getElementById('termos').value,
-                notas: document.getElementById('notas').value,
-                val: document.getElementById('validade').value,
-                dt: document.getElementById('dataInicio').value,
-                itens: itens,
-                logo: base64Logo
+            const data = {
+                cli: document.getElementById('cliente').value, prof: document.getElementById('profissional').value,
+                rev: document.getElementById('revisao').value, dias: document.getElementById('dias').value,
+                eq: document.getElementById('equipe').value, vd: document.getElementById('vDiaria').value,
+                gas: document.getElementById('gasolina').value, alm: document.getElementById('almoco').value,
+                comp: document.getElementById('complexidade').value, mrg: document.getElementById('margem').value,
+                imp: document.getElementById('imposto').value, term: document.getElementById('termos').value,
+                notas: document.getElementById('notas').value, val: document.getElementById('validade').value,
+                dt: document.getElementById('dataInicio').value, itens: itens, logo: base64Logo
             };
-            localStorage.setItem('orc_ultimate_v23', JSON.stringify(dados));
+            localStorage.setItem('orc_pro_v3', JSON.stringify(data));
         }
 
         function carregar() {
-            const s = localStorage.getItem('orc_ultimate_v23');
-            if(s) {
-                const d = JSON.parse(s);
+            const saved = localStorage.getItem('orc_pro_v3');
+            if(saved) {
+                const d = JSON.parse(saved);
                 document.getElementById('cliente').value = d.cli || '';
                 document.getElementById('profissional').value = d.prof || '';
                 document.getElementById('revisao').value = d.rev || 'REV 01';
@@ -319,12 +326,13 @@
         }
 
         function exportJSON() {
-            const blob = new Blob([localStorage.getItem('orc_ultimate_v23')], {type: 'application/json'});
+            const blob = new Blob([localStorage.getItem('orc_pro_v3')], {type: 'application/json'});
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-            a.download = `PROJETO_FULL_${document.getElementById('cliente').value || 'BACKUP'}.json`; a.click();
+            a.download = `PROJETO_ORC_${document.getElementById('cliente').value || 'BACKUP'}.json`; a.click();
         }
 
         window.onload = carregar;
     </script>
+
 </body>
 </html>
