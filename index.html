@@ -4,10 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🦾 Orçameintor</title>
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet" />
-    
+
     <style>
         :root {
             --primaria: #5aa897; --secundaria: #39ffb8; --fundo: #0d1413;
@@ -16,20 +16,20 @@
         }
         /* MODO REUNIÃO - ESCONDE O QUE O CLIENTE NÃO PODE VER */
         body.privacy-mode .sensitive { filter: blur(10px); pointer-events: none; opacity: 0.2; }
-        
+
         * { box-sizing: border-box; transition: all 0.2s ease; }
         body { background: var(--fundo); color: var(--texto); font-family: 'Inter', sans-serif; margin: 0; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 950px; }
 
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-left: 5px solid var(--primaria); padding-left: 20px; }
         h1 { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 1.8rem; color: var(--primaria); margin: 0; text-transform: uppercase; }
-        
+
         .card { background: var(--fundo-card); padding: 25px; border-radius: 16px; border: 1px solid var(--borda); margin-bottom: 20px; position: relative; }
         .card-title { font-family: 'Orbitron'; font-size: 0.75rem; margin-bottom: 20px; color: var(--secundaria); text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center; }
-        
+
         label { display: block; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; color: var(--primaria); }
         input, textarea, select { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--borda); border-radius: 8px; padding: 12px; color: var(--texto); font-family: 'Inter', sans-serif; margin-bottom: 15px; }
-        
+
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .item-row { display: grid; grid-template-columns: 3fr 80px 120px 40px; gap: 12px; margin-bottom: 10px; }
@@ -40,7 +40,7 @@
 
         .total-container { margin: 20px 0; padding: 35px; background: linear-gradient(135deg, #1a2a27 0%, var(--primaria) 100%); color: white; border-radius: 16px; text-align: right; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .total-value { font-family: 'Orbitron', sans-serif; font-size: 3rem; font-weight: 900; }
-        
+
         #logo-preview { max-height: 50px; display: none; margin-bottom: 10px; border-radius: 5px; }
         .badge { font-size: 0.6rem; padding: 3px 10px; border-radius: 10px; background: var(--borda); color: var(--secundaria); font-weight: bold; }
 
@@ -51,7 +51,7 @@
 
     <div class="container">
         <button class="btn-reuniao" onclick="togglePrivacy()">👁️ MODO LUCRO RESTRITO (ESCONDER CUSTOS INTERNOS)</button>
-        
+
         <header>
             <div>
                 <h1>Orçameintor <span style="color: var(--secundaria)">Pro</span></h1>
@@ -103,6 +103,11 @@
 
         <div class="card sensitive" style="border-left: 4px solid var(--fiscal);">
             <div class="card-title" style="color: var(--fiscal);">⚖️ Estratégia Fiscal e BDI <span class="badge">LUCRO</span></div>
+            <div>
+    <label>Margem de Segurança / Imprevistos (%)</label>
+    <input type="number" id="seguranca" value="0" oninput="calc()">
+</div>
+
             <div class="grid-2">
                 <div><label>Margem de Lucro / BDI (%)</label><input type="number" id="margem" value="0" oninput="calc()"></div>
                 <div><label>Impostos Sobre Nota (ISS/NF %)</label><input type="number" id="imposto" value="0" oninput="calc()"></div>
@@ -112,6 +117,7 @@
         <div class="card">
             <div class="card-title">📝 Detalhes Contratuais e Entrega</div>
             <div class="grid-2">
+              
                 <div><label>Validade da Proposta</label><input type="text" id="validade" value="15 dias úteis"></div>
                 <div><label>Data Prevista de Início</label><input type="date" id="dataInicio"></div>
             </div>
@@ -133,9 +139,13 @@
             <button class="btn-main" onclick="gerarPDF()">📄 EMITIR PROPOSTA PROFISSIONAL (PDF)</button>
             <button class="btn-main" style="background: #111; border: 1px solid var(--borda); color: var(--primaria);" onclick="exportJSON()">💾 SALVAR BACKUP DO PROJETO</button>
         </div>
+        <button class="btn-main" style="background: #25d366; color: white; margin-top: 10px;" onclick="enviarWhatsapp()">
+    🟢 ENVIAR RESUMO POR WHATSAPP
+</button>
+
     </div>
 
-        <script>
+    <script>
         let itens = [];
         let base64Logo = "";
 
@@ -195,20 +205,23 @@
         // ENGENHARIA DE CUSTOS (MATEMÁTICA N2)
         function calc() {
             const subProdutos = itens.reduce((acc, i) => acc + ((parseFloat(i.q)||0) * (parseFloat(i.p)||0)), 0);
-            
+
             const d = parseFloat(document.getElementById('dias').value) || 0;
             const e = parseFloat(document.getElementById('equipe').value) || 0;
             const v = parseFloat(document.getElementById('vDiaria').value) || 0;
             const g = parseFloat(document.getElementById('gasolina').value) || 0;
             const a = parseFloat(document.getElementById('almoco').value) || 0;
-            
+
             const custosOp = (d * e * v) + g + a;
             const complex = parseFloat(document.getElementById('complexidade').value) || 1;
             const margem = 1 + ((parseFloat(document.getElementById('margem').value) || 0) / 100);
             const imposto = 1 + ((parseFloat(document.getElementById('imposto').value) || 0) / 100);
+            
+            // Margem de segurança contra imprevistos
+            const seguranca = 1 + ((parseFloat(document.getElementById('seguranca').value) || 0) / 100);
 
-            // Cálculo em cascata: (Base + Logística) * Dificuldade * Lucro * Imposto
-            const totalFinal = (subProdutos + custosOp) * complex * margem * imposto;
+            // Cálculo em cascata: (Base + Logística) * Dificuldade * Lucro * Imposto * Segurança
+            const totalFinal = (subProdutos + custosOp) * complex * margem * imposto * seguranca;
 
             document.getElementById('resTotal').innerText = totalFinal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
             salvar();
@@ -218,19 +231,21 @@
         function gerarPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            
+
             const bdi = 1 + ((parseFloat(document.getElementById('margem').value)||0) / 100);
             const imp = 1 + ((parseFloat(document.getElementById('imposto').value)||0) / 100);
             const comp = parseFloat(document.getElementById('complexidade').value) || 1;
-            const fatorFinal = bdi * imp * comp;
+            const seg = 1 + ((parseFloat(document.getElementById('seguranca').value) || 0) / 100);
+            
+            // Fator final agora inclui a segurança para o PDF bater com o site
+            const fatorFinal = bdi * imp * comp * seg;
 
-            // Cabeçalho Dark Mode
             doc.setFillColor(13, 20, 19); doc.rect(0, 0, 210, 40, 'F');
             if(base64Logo) doc.addImage(base64Logo, 'JPEG', 170, 5, 30, 30);
 
             doc.setTextColor(90, 168, 151); doc.setFontSize(18); doc.setFont(undefined, 'bold');
             doc.text("PROPOSTA COMERCIAL", 15, 20);
-            
+
             doc.setTextColor(200); doc.setFontSize(8); doc.setFont(undefined, 'normal');
             doc.text(`EMISSOR: ${document.getElementById('profissional').value.toUpperCase()}`, 15, 28);
             doc.text(`REVISÃO: ${document.getElementById('revisao').value} | DATA: ${new Date().toLocaleDateString('pt-BR')}`, 15, 33);
@@ -254,7 +269,6 @@
                 if(y > 270) { doc.addPage(); y = 20; }
             });
 
-            // Logística oculta no PDF como serviço de engenharia
             const dObra = parseFloat(document.getElementById('dias').value) || 0;
             if(dObra > 0) {
                 const totalLog = ( (dObra * (parseFloat(document.getElementById('equipe').value)||0) * (parseFloat(document.getElementById('vDiaria').value)||0)) + (parseFloat(document.getElementById('gasolina').value)||0) + (parseFloat(document.getElementById('almoco').value)||0) ) * fatorFinal;
@@ -263,12 +277,10 @@
                 y += 15;
             }
 
-            // TOTAL DE IMPACTO
             doc.setFillColor(90, 168, 151); doc.rect(140, y-6, 55, 12, 'F');
             doc.setTextColor(255); doc.setFontSize(12); doc.setFont(undefined, 'bold');
             doc.text(`TOTAL: R$ ${document.getElementById('resTotal').innerText}`, 142, y + 2);
 
-            // Notas e Termos
             y += 25;
             doc.setTextColor(40); doc.setFontSize(9); doc.text("CONDIÇÕES E GARANTIA:", 15, y);
             doc.setFont(undefined, 'normal');
@@ -293,7 +305,9 @@
                 eq: document.getElementById('equipe').value, vd: document.getElementById('vDiaria').value,
                 gas: document.getElementById('gasolina').value, alm: document.getElementById('almoco').value,
                 comp: document.getElementById('complexidade').value, mrg: document.getElementById('margem').value,
-                imp: document.getElementById('imposto').value, term: document.getElementById('termos').value,
+                imp: document.getElementById('imposto').value, 
+                seg: document.getElementById('seguranca').value, // SALVANDO SEGURANÇA
+                term: document.getElementById('termos').value,
                 notas: document.getElementById('notas').value, val: document.getElementById('validade').value,
                 dt: document.getElementById('dataInicio').value, itens: itens, logo: base64Logo
             };
@@ -315,6 +329,7 @@
                 document.getElementById('complexidade').value = d.comp || 1;
                 document.getElementById('margem').value = d.mrg || 0;
                 document.getElementById('imposto').value = d.imp || 0;
+                document.getElementById('seguranca').value = d.seg || 0; // CARREGANDO SEGURANÇA
                 document.getElementById('termos').value = d.term || '';
                 document.getElementById('notas').value = d.notas || '';
                 document.getElementById('validade').value = d.val || '15 dias úteis';
@@ -330,9 +345,24 @@
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
             a.download = `PROJETO_ORC_${document.getElementById('cliente').value || 'BACKUP'}.json`; a.click();
         }
+        
+        function enviarWhatsapp() {
+            const cliente = document.getElementById('cliente').value || "Cliente";
+            const total = document.getElementById('resTotal').innerText;
+            const profissional = document.getElementById('profissional').value || "Consultor";
+            
+            const mensagem = `Olá ${cliente}! 🦾%0A%0A` +
+                `Aqui é o ${profissional}. Acabei de gerar a proposta técnica para o seu projeto.%0A%0A` +
+                `*Valor Total do Investimento: R$ ${total}*%0A%0A` +
+                `Estou te enviando o PDF com todos os detalhes e prazos agora mesmo. Alguma dúvida?`;
+
+            window.open(`https://wa.me/?text=${mensagem}`, '_blank');
+        }
 
         window.onload = carregar;
     </script>
 
 </body>
 </html>
+        
+   
