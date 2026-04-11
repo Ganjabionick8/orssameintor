@@ -1,26 +1,33 @@
-Orçameintor Pro
-​Sistema de Engenharia de Custos e Emissão de Propostas Técnicas
-​Descrição
-​O Orçameintor Pro é uma aplicação web voltada para a gestão de orçamentos e precificação de serviços técnicos e materiais. Desenvolvido para atuar na ponta entre a análise de custos internos e a entrega comercial, o sistema permite a consolidação de gastos logísticos, operacionais e fiscais em um documento final formatado em PDF.
-​A ferramenta foi projetada com foco em privacidade de dados sensíveis e precisão no cálculo de BDI (Benefício e Despesas Indiretas) e margens de lucro sobre o custo total de implementação.
-​Principais Funcionalidades
-​Gestão de Itens: Cadastro dinâmico de insumos e serviços com controle de quantidade e custos unitários.
-​Engenharia de Custos Logísticos: Cálculo detalhado de diárias de equipe, consumo de combustível e alimentação, segregando custos de mobilização de custos de materiais.
-​Modo de Privacidade: Recurso de ocultação de custos internos (Filtro de Desfoque) para utilização da interface em reuniões de apresentação com o cliente.
-​Precificação Estratégica: Aplicação de fatores de complexidade de obra, margens de lucro configuráveis e incidência de impostos sobre nota fiscal.
-​Emissão de PDF: Geração de propostas comerciais formatadas com cabeçalho institucional, termos contratuais e cronograma previsto.
-​Persistência de Dados: Salvamento automático em estado local (LocalStorage) e suporte a exportação de backups em formato JSON.
-​Estrutura Técnica
-​Frontend: HTML5, CSS3 (Custom Properties e Flexbox/Grid).
-​Lógica de Negócio: JavaScript Vanilla (ES6+).
-​Biblioteca de PDF: jsPDF para renderização de documentos via client-side.
-​Tipografia: Orbitron e Inter para legibilidade técnica.
-​Aplicação Prática
-​A aplicação resolve o gargalo de profissionais que atuam em infraestrutura, redes e serviços gerais, permitindo que custos invisíveis (como deslocamento e desgaste de ferramentas) sejam devidamente precificados sem exposição direta desses valores ao contratante final.
-​Instalação e Uso
-​O sistema é independente de backend e pode ser executado diretamente em navegadores modernos.
-​Clone o repositório.
-​Abra o arquivo index.html.
-​Configure os dados de consultoria no cabeçalho.
-​Adicione os itens de escopo e os custos logísticos previstos.
-​Selecione a margem de lucro e emita a proposta técnica.
+# 🦾 Orçameintor Pro v2.3.0
+
+> **A aniquilação definitiva do prejuízo em orçamentos técnicos.**
+
+O **Orçameintor** é uma ferramenta de engenharia de custos desenvolvida para profissionais que não aceitam margem de erro. Ele transforma variáveis complexas (logística, impostos, BDI e imprevistos) em propostas comerciais de alta autoridade em PDF.
+
+## 🚀 Funcionalidades Elite
+
+* **Engenharia N2:** Cálculo em cascata que considera equipe, diárias, combustível e alimentação.
+* **Fator de Complexidade:** Ajuste dinâmico de preço baseado na dificuldade do ambiente.
+* **Margem Anti-Zica:** Campo de segurança imobiliário/técnico para cobrir imprevistos sem queimar o lucro.
+* **Modo Reunião (Privacy):** Blur instantâneo em custos internos para apresentar valores ao cliente sem expor suas margens.
+* **WhatsApp Fast-Closing:** Geração de resumo comercial formatado para fechamento rápido via mobile.
+* **PDF Dark Mode:** Emissão de propostas profissionais com design futurista e suporte a logotipo personalizado.
+
+## 🛠️ Tecnologias de Guerrilha
+
+* **Frontend:** HTML5 / CSS3 (Variáveis `:root` para temática dinâmica)
+* **Lógica:** JavaScript Vanilla (Cálculos de precisão e persistência via `localStorage`)
+* **Engine de PDF:** jsPDF library
+
+## 📥 Como usar
+
+1. Clone o repositório ou baixe o arquivo `.html`.
+2. Abra em qualquer navegador (totalmente offline/client-side).
+3. Preencha os campos de engenharia de custos.
+4. Gere o PDF ou envie o resumo diretamente para o cliente.
+
+---
+*Desenvolvido para ser leve, rápido e letal contra orçamentos mal calculados.*
+
+
+> ### 🔗 [ACESSE AQUI](https://ganjabionick8.github.io/orssameintor/)
