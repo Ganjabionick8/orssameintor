@@ -1,6 +1,5 @@
 # 🦾 Orçameintor Pro v2.3.0
 
-> **A aniquilação definitiva do prejuízo em orçamentos técnicos.**
 
 O **Orçameintor** é uma ferramenta de engenharia de custos desenvolvida para profissionais que não aceitam margem de erro. Ele transforma variáveis complexas (logística, impostos, BDI e imprevistos) em propostas comerciais de alta autoridade em PDF.
 
@@ -27,7 +26,7 @@ O **Orçameintor** é uma ferramenta de engenharia de custos desenvolvida para p
 4. Gere o PDF ou envie o resumo diretamente para o cliente.
 
 ---
-*Desenvolvido para ser leve, rápido e letal contra orçamentos mal calculados.*
+*Desenvolvido para ser leve, rápido e de fácil usabilidade para qualquer usuario*
 
 
 > ### 🔗 [ACESSE AQUI](https://ganjabionick8.github.io/orssameintor/)
